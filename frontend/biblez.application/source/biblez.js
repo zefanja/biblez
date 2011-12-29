@@ -349,6 +349,9 @@ enyo.kind({
 			case "night":
 				this.$.mainView.setClassName("scroller-night");
 			break;
+			case "white":
+				this.$.mainView.setClassName("scroller-white");
+			break;
 		
 		}
 	},
