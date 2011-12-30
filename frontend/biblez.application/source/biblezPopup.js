@@ -272,7 +272,8 @@ enyo.kind({
                     {caption: "Georgia", value: "Georgia"},
                     {caption: "Times", value: "Times"},
                     {caption: $L("Greek"), value: "greek"},
-                    {caption: $L("Hebrew"), value: "hebrew"}
+                    {caption: $L("Hebrew"), value: "hebrew"},
+                    {caption: "Dyslexic", value: "open-dyslexic"}
                    
                 ]}
             ]}

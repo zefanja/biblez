@@ -41,7 +41,8 @@ enyo.kind({
                     {caption: $L("Default"), value: "biblez"},
 					{caption: $L("Paper Grayscale"), value: "grayscale"},
                     {caption: $L("Gray"), value: "palm"},
-					{caption: $L("Night View"), value: "night"}
+					{caption: $L("Night View"), value: "night"},
+					{caption: $L("Plain White"), value: "white"}
                 ]},
 				{align: "center", components: [
 					{flex: 1, name: "linebreak", content: $L("Enable Linebreaks")},

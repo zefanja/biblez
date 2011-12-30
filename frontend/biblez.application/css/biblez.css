@@ -68,6 +68,15 @@ a {
     color: #F5F5F5;
 }
 
+.scroller-white {
+	background-color: #fff;
+	color: #000;
+}
+
+.scroller-white a {
+	color: #000;
+}
+
 .biblez-hint {
     text-align: center;
     font-weight: bold;
