@@ -114,6 +114,10 @@ enyo.kind({
 		}
 		
 		var findBreak = "";
+		content = "";
+		if (this.linebreak) {
+			content = "<p>";
+		}
 		var content = "";
 		var tmpVerse = "";
 		for (var i=0; i<verses.length; i++) {
@@ -136,7 +140,7 @@ enyo.kind({
 			content = content + findBreak;
 			
 			if (this.linebreak) {
-				content = content + "<br>";
+				content = content + "</p>";
 			}
 		}
 		//this.resized();
