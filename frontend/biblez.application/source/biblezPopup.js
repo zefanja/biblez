@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -18,8 +18,8 @@ enyo.kind({
     scrim: false,
     kind: "Popup",
     lazy: false,
-    /*showHideMode: "transition", 
-    openClassName: "fadeIn", 
+    /*showHideMode: "transition",
+    openClassName: "fadeIn",
     className: "fadedOut", */
     events: {
       onNote: "",
@@ -63,21 +63,21 @@ enyo.kind({
                 {kind: "Button", caption: $L("eMail"), flex: 1, onclick: "sendEmail"},
                 {kind: "Button", caption: $L("SMS"), flex: 1, onclick: "sendSMS"}
             ]}
-        ]}       
+        ]}
     ],
-    
+
     setBmCaption: function (caption) {
         this.$.bmCaption.setContent(caption);
     },
-    
+
     setNoteCaption: function (caption) {
         this.$.noteCaption.setContent(caption);
     },
-    
+
     setHlCaption: function (caption) {
         this.$.hlCaption.setContent(caption);
     },
-    
+
     open: function () {
         this.inherited(arguments);
         this.$.colorSelector.hide();
@@ -90,12 +90,12 @@ enyo.kind({
         this.$.colorSelector.show();
         this.$.csSelector.hide();
     },
-    
+
     openColors: function (inSender, inEvent) {
         this.$.colorSelector.show();
         this.$.csSelector.hide();
     },
-    
+
     highlightVerse: function (inSender, inEvent) {
         //enyo.log(inSender.color);
         this.color = inSender.color;
@@ -126,12 +126,12 @@ enyo.kind({
     sendSMS: function (inSender, inEvent) {
        this.$.palmService.call({
             id: 'com.palm.app.messaging',
-            params: {    
+            params: {
                 messageText: this.verse
             }
-        }); 
+        });
     },
-    
+
     closePopup: function() {
        this.close();
     }
@@ -148,26 +148,26 @@ enyo.kind({
     published: {
 		edit: false
 	},
-    caption: $L("Add A Note"), 
-    components:[        
-        //{kind: "Scroller", style: "max-height: 300px; min-height: 50px;", components: [
-            {name: "noteInput", kind: "RichText", className: "note-input", hint: $L("Add your note here."), changeOnInput: true, onfocus: "openCenter", onchange: "toggleButton"},
-        //]},
-        {layoutKind: "HFlexLayout", style: "margin-top: 10px;", components: [  
+    caption: $L("Add A Note"),
+    components:[
+        {kind: "BasicScroller", autoVertical: true, style: "height: auto;", flex: 1, components: [
+            {name: "noteInput", kind: "RichText", className: "note-input", hint: $L("Add your note here."), changeOnInput: true, onfocus: "openCenter", onchange: "toggleButton"}
+        ]},
+        {layoutKind: "HFlexLayout", style: "margin-top: 10px;", components: [
             {name: "btCancel", kind: "Button", caption: $L("Cancel"), flex: 1, onclick: "closePopup"},
             {name: "btAdd", kind: "Button", caption: $L("Add"), flex: 1, onclick: "addNote", className: "enyo-button-affirmative"}
         ]}
-        
+
     ],
-    
+
     getNote: function () {
         return this.$.noteInput.getHtml();
     },
-    
+
     setFocus: function () {
         this.$.noteInput.forceFocusEnableKeyboard();
     },
-	
+
 	toggleButton: function (inSender, inEvent) {
 		//enyo.log("INPUT:", inSender.getValue());
 		if (inSender.getValue() === "") {
@@ -176,7 +176,7 @@ enyo.kind({
 			this.$.btAdd.setDisabled(false);
 		}
 	},
-    
+
     clearInput: function () {
         this.dismissWithClick = false;
         this.$.noteInput.setValue("");
@@ -186,33 +186,33 @@ enyo.kind({
         this.edit = false;
         this.setFocus();
     },
-    
+
     setNote: function(noteText) {
         this.$.btAdd.hide();
         this.$.noteInput.setValue(noteText.replace(/"/g,""));
     },
-    
+
     addNote: function (inSender, inEvent) {
         console.log(this.$.noteInput.getValue());
         this.doAddNote();
         this.closePopup();
     },
-    
+
     setEditMode: function () {
         this.edit = true;
     },
-    
+
     showEditBt: function () {
         if (this.edit === true) {
             this.$.btAdd.setCaption($L("Edit"));
-            this.$.btAdd.show();    
-        }        
+            this.$.btAdd.show();
+        }
     },
-	
+
 	hideCancel: function () {
 		this.$.btCancel.hide();
 	},
-    
+
     openCenter: function() {
         this.dismissWithClick = false;
 		this.$.btCancel.show();
@@ -220,7 +220,7 @@ enyo.kind({
         //this.openAtCenter();
         this.showEditBt();
     },
-    
+
     closePopup: function () {
        this.close();
     }
@@ -232,14 +232,16 @@ enyo.kind({
     //caption: "",
     lazy: false,
     components:[
-        {name: "noteContent", allowHtml: true, content: "", className: "popup-note"}
+        {kind: "BasicScroller", autoVertical: true, style: "height: auto;", flex: 1, components: [
+            {name: "noteContent", allowHtml: true, content: "", className: "popup-note"}
+        ]}
         //{kind: "Button", caption: $L("OK"), onclick: "closePopup", style: "margin-top:10px"}
     ],
-    
+
     setNote: function (note) {
         this.$.noteContent.setContent(note.replace(/"/g,""));
     },
-    
+
     closePopup: function() {
        this.close();
     }
@@ -273,41 +275,43 @@ enyo.kind({
                     {caption: "Times", value: "Times"},
                     {caption: $L("Greek"), value: "greek"},
                     {caption: $L("Hebrew"), value: "hebrew"},
-                    {caption: "Dyslexic", value: "open-dyslexic"}
-                   
+                    {caption: $L("Custom"), value: "custom"}
+
                 ]}
             ]}
-        ]}        
+        ]}
     ],
-    
+
     sliderChange: function (inSender, inEvent) {
         //enyo.log(inSender.position);
         this.fontSize = inSender.position;
         this.doFontSize();
     },
-    
+
     setFontSize: function (size) {
         if (size) {
             this.$.fontSlider.setPosition(size);
         } else {
             this.$.fontSlider.setPosition(20);
-        }        
+        }
     },
-    
+
     setFont: function (font) {
         if (font) {
             if (font == enyo.application.hebrewFont) {
                 this.$.fontSelector.setValue("hebrew");
             } else if (font == enyo.application.greekFont) {
                 this.$.fontSelector.setValue("greek");
+            } else if (font == enyo.application.customFont) {
+                this.$.fontSelector.setValue("custom");
             } else {
                 this.$.fontSelector.setValue(font);
-            }            
+            }
         } else {
             this.$.fontSelector.setValue("Prelude");
-        }        
+        }
     },
-    
+
     fontChanged: function(inSender, inValue, inOldValue) {
         this.font = inValue;
         this.doFont();
@@ -329,13 +333,13 @@ enyo.kind({
            {kind: "Button", flex: 1, caption: $L("Send eMail"), onclick: "sendMail"},
            {kind: "Button", flex: 1, caption: $L("Close"), onclick: "doCancel"}
         ]}
-       
+
     ],
-    
+
     doCancel: function () {
         this.close();
     },
-    
+
     sendMail: function () {
         this.$.palmService.call({
            id: 'com.palm.app.email',

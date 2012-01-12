@@ -32,7 +32,7 @@ enyo.kind({
 	},
 	components: [
         {kind: enyo.ApplicationEvents, onBack: "goBack"},
-        {kind: enyo.PalmService, 
+        {kind: enyo.PalmService,
             name: "DownloadMgr",
             service: "palm://com.palm.downloadmanager/",
             method: "download",
@@ -128,7 +128,7 @@ enyo.kind({
             inEvent.stopPropagation();
             if (this.$.slidingPane.getViewName() == "left")
                 enyo.application.modManViewLeft = true;
-        }        
+        }
     },
 	
 	refreshModules: function (inSender, inEvent) {

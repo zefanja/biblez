@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -48,7 +48,7 @@ enyo.kind({
 					{flex: 1, name: "linebreak", content: $L("Enable Linebreaks")},
 					{name: "toggleLB", kind: "ToggleButton", state: this.linebreak, onChange: "changeLinebreak"}
 				]}
-				
+
             ]},
             {kind: "Group", caption: $L("Custom Fonts"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
                 {kind: "VFlexBox", components: [
@@ -60,6 +60,11 @@ enyo.kind({
                 {kind: "VFlexBox", components: [
                     {name: "greekInput", kind: "Input", hint: "", onblur: "handleGreekFont", components: [
                         {content: $L("Greek Font"), className: "popup-label"}
+                    ]}
+                ]},
+                {kind: "VFlexBox", components: [
+                    {name: "customInput", kind: "Input", hint: "", onblur: "handleCustomFont", components: [
+                        {content: $L("Custom Font"), className: "popup-label"}
                     ]}
                 ]}
             ]},
@@ -83,23 +88,23 @@ enyo.kind({
             this.$.btBack.hide();
         }
     },
-    
+
     itemChanged: function(inSender, inValue, inOldValue) {
         this.background = inValue;
         this.doBgChange();
     },
-    
+
     setBgItem: function (value) {
         this.background = value;
         this.$.generalSelector.setValue(value);
     },
-	
+
 	changeLinebreak: function (inSender, inState) {
 		//enyo.log(inState);
 		this.linebreak = inState;
 		this.doLbChange();
 	},
-	
+
 	linebreakChanged: function (inSender, inEvent) {
 		this.$.toggleLB.setState(this.linebreak);
 	},
@@ -114,9 +119,15 @@ enyo.kind({
         enyo.application.greekFont = "'" + inSender.getValue() + "'";
     },
 
-    setCustomFonts: function (hebrew, greek) {
+    handleCustomFont: function (inSender, inEvent) {
+        //enyo.log(inSender.getValue());
+        enyo.application.customFont = "'" + inSender.getValue() + "'";
+    },
+
+    setCustomFonts: function (hebrew, greek, custom) {
         this.$.hebrewInput.setValue(hebrew.replace(/'/g, ""));
         this.$.greekInput.setValue(greek.replace(/'/g, ""));
+        this.$.customInput.setValue(custom.replace(/'/g, ""));
     },
 
 	handleBackup: function (inSender, inEvent) {
@@ -146,7 +157,7 @@ enyo.kind({
 		//enyo.log("RESPONSE:", inResponse);
 		if (inResponse.returnValue) {
 			enyo.windows.addBannerMessage($L("Backuped") + " " + inType, enyo.json.stringify({}));
-		}		
+		}
 	},
 
     openFilePicker: function (inSender, inEvent) {
@@ -179,7 +190,7 @@ enyo.kind({
                     biblezTools.restoreHighlights(enyo.json.parse(inResponse.content), enyo.bind(this, this.callbackRestore, $L("Highlights")));
                 break;
             }
-        }       
+        }
     },
 
     callbackRestore: function (inType) {
