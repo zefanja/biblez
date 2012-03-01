@@ -1,23 +1,23 @@
 {
-	"id": "de.zefanjas.biblezpro.enyo.fileio",
+	"id": "de.zefanjas.biblezhdpro.fileio",
 	"description": "FileIO Service",
 	"services": [
 		{
 			"name": "de.zefanjas.biblez.enyo.fileio",
 			"description": "FileIO Service",
 			"commands": [
-				{ 
-					"name": "readdir", 
+				{
+					"name": "readdir",
 					"assistant": "ReadDirAssistant",
 					"public": true
 				},
-				{ 
-					"name": "writefile", 
+				{
+					"name": "writefile",
 					"assistant": "WriteFileAssistant",
 					"public": true
 				},
-				{ 
-					"name": "readfile", 
+				{
+					"name": "readfile",
 					"assistant": "ReadFileAssistant",
 					"public": true
 				}

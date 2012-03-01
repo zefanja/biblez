@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -41,16 +41,16 @@ enyo.kind({
         ]},
         {kind: "Scroller", flex: 1, components: [
             {kind: "RowGroup", caption: $L("General"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
-                {name: "generalSelector", kind: "ListSelector", label: $L("Background"), onChange: "itemChanged", items: [
+                /*{name: "generalSelector", kind: "ListSelector", label: $L("Background"), onChange: "itemChanged", items: [
                     {caption: $L("Default"), value: "biblez"},
 					{caption: $L("Paper Grayscale"), value: "grayscale"},
                     {caption: $L("Gray"), value: "palm"},
 					{caption: $L("Night View"), value: "night"}
-                ]},
-                {align: "center", components: [
+                ]}, */
+                /*{align: "center", components: [
                     {flex: 1, name: "scrolling", content: $L("Scrolling Method")},
                     {name: "toggleScroll", kind: "ToggleButton", onLabel: $L("Horizontal"), offLabel: $L("Vertical"), state: true, onChange: "changeScrolling"}
-                ]},
+                ]},*/
 				{align: "center", components: [
 					{flex: 1, name: "linebreak", content: $L("Enable Linebreaks")},
 					{name: "toggleLB", kind: "ToggleButton", state: this.linebreak, onChange: "changeLinebreak"}
@@ -60,9 +60,13 @@ enyo.kind({
                     {name: "toggleHeading", kind: "ToggleButton", state: true, onChange: "changeHeading"}
                 ]},
                 {align: "center", components: [
+                    {flex: 1, content: $L("Enable Book Introductions")},
+                    {name: "toggleIntro", kind: "ToggleButton", state: true, onChange: "changeIntro"}
+                ]},
+                {align: "center", components: [
                     {flex: 1, name: "footnotes", content: $L("Enable Footnotes")},
                     {name: "toggleFN", kind: "ToggleButton", state: true, onChange: "changeFootnote"}
-                ]}				
+                ]}
             ]},
             {kind: "Group", caption: $L("Custom Fonts"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
                 {kind: "VFlexBox", components: [
@@ -90,12 +94,42 @@ enyo.kind({
             {kind: "Spacer"}
         ]}
     ],
-    
+
+    create: function () {
+        this.inherited(arguments);
+        //enyo.log("LInebreak");
+        if (enyo.getCookie("linebreak")) {
+            biblez.linebreak = enyo.json.parse(enyo.getCookie("linebreak"));
+            this.$.toggleLB.setState(biblez.linebreak);
+        }
+
+        if (enyo.getCookie("intro")) {
+            biblez.intro = enyo.json.parse(enyo.getCookie("intro"));
+            this.$.toggleIntro.setState(biblez.intro);
+        } else {
+            biblez.intro = true;
+        }
+
+        if (enyo.getCookie("heading")) {
+            biblez.heading = enyo.json.parse(enyo.getCookie("heading"));
+            this.$.toggleHeading.setState(biblez.heading);
+        } else {
+            biblez.heading = true;
+        }
+
+        if (enyo.getCookie("footnote")) {
+            biblez.footnote = enyo.json.parse(enyo.getCookie("footnote"));
+            this.$.toggleFN.setState(biblez.footnote);
+        } else {
+            biblez.footnote = true;
+        }
+    },
+
     itemChanged: function(inSender, inValue, inOldValue) {
         this.background = inValue;
         this.doBgChange();
     },
-    
+
     setBgItem: function (value) {
         this.background = value;
         this.$.generalSelector.setValue(value);
@@ -107,29 +141,35 @@ enyo.kind({
         enyo.application.dbSets.scrolling = enyo.json.stringify(!inState);
         this.doScrollChange();
     },
-	
+
 	changeLinebreak: function (inSender, inState) {
 		//enyo.log(inState);
-		this.linebreak = inState;
-		this.doLbChange();
+        enyo.setCookie("linebreak", enyo.json.stringify(inState));
+		biblez.linebreak = inState;
 	},
 
     changeHeading: function (inSender, inState) {
         //enyo.log(inState);
-        this.heading = inState;
-        enyo.application.heading = inState;
+        enyo.setCookie("heading", enyo.json.stringify(inState));
+        biblez.heading = inState;
+    },
+
+    changeIntro: function (inSender, inState) {
+        //enyo.log(inState);
+        enyo.setCookie("intro", enyo.json.stringify(inState));
+        biblez.intro = inState;
     },
 
     changeFootnote: function (inSender, inState) {
         //enyo.log(inState);
-        this.footnotes = inState;
-        enyo.application.footnotes = inState;
+        enyo.setCookie("footnote", enyo.json.stringify(inState));
+        biblez.footnote = inState;
     },
 
     scrollingChanged: function (inSender, inEvent) {
         this.$.toggleScroll.setState(this.scrolling);
     },
-	
+
 	linebreakChanged: function (inSender, inEvent) {
 		this.$.toggleLB.setState(this.linebreak);
 	},
@@ -162,9 +202,9 @@ enyo.kind({
 		var time = new Date();
 		this.backupTime = time.getFullYear().toString() + (time.getMonth() + 1).toString() + time.getDate().toString();
 		//enyo.log(this.backupTime, time.getFullYear(), time.getMonth() + 1, time.getDate());
-		biblezTools.getNotes(-1,-1,enyo.bind(this, this.callBackupNotes));
-		biblezTools.getBookmarks(-1,-1,enyo.bind(this, this.callBackupBookmarks));
-		biblezTools.getHighlights(-1,-1,enyo.bind(this, this.callBackupHighlights));
+		api.getNotes(-1,-1,enyo.bind(this, this.callBackupNotes));
+		api.getBookmarks(-1,-1,enyo.bind(this, this.callBackupBookmarks));
+		api.getHighlights(-1,-1,enyo.bind(this, this.callBackupHighlights));
 	},
 
 	callBackupNotes: function (content) {
@@ -184,7 +224,7 @@ enyo.kind({
 		//enyo.log("RESPONSE:", inResponse);
 		if (inResponse.returnValue) {
 			enyo.windows.addBannerMessage($L("Backuped") + " " + inType, enyo.json.stringify({}));
-		}		
+		}
 	},
 
     openFilePicker: function (inSender, inEvent) {
@@ -208,16 +248,16 @@ enyo.kind({
         if (inResponse.returnValue) {
             switch (inType) {
                 case "bookmarks":
-                    biblezTools.restoreBookmarks(enyo.json.parse(inResponse.content), enyo.bind(this, this.callbackRestore, $L("Bookmarks")));
+                    api.restoreBookmarks(enyo.json.parse(inResponse.content), enyo.bind(this, this.callbackRestore, $L("Bookmarks")));
                 break;
                 case "notes":
-                    biblezTools.restoreNotes(enyo.json.parse(inResponse.content), enyo.bind(this, this.callbackRestore, $L("Notes")));
+                    api.restoreNotes(enyo.json.parse(inResponse.content), enyo.bind(this, this.callbackRestore, $L("Notes")));
                 break;
                 case "highlights":
-                    biblezTools.restoreHighlights(enyo.json.parse(inResponse.content), enyo.bind(this, this.callbackRestore, $L("Highlights")));
+                    api.restoreHighlights(enyo.json.parse(inResponse.content), enyo.bind(this, this.callbackRestore, $L("Highlights")));
                 break;
             }
-        }       
+        }
     },
 
     callbackRestore: function (inType) {

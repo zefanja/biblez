@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -106,8 +106,8 @@ enyo.kind({
     scrim: false,
     kind: "Popup",
     lazy: false,
-    /*showHideMode: "transition", 
-    openClassName: "fadeIn", 
+    /*showHideMode: "transition",
+    openClassName: "fadeIn",
     className: "fadedOut", */
     events: {
       onNote: "",
@@ -145,21 +145,21 @@ enyo.kind({
                 {kind: "Button", caption: $L("eMail"), flex: 1, onclick: "sendEmail"},
                 {kind: "Button", caption: $L("SMS"), flex: 1, onclick: "sendSMS"}
             ]}
-        ]}       
+        ]}
     ],
-    
+
     setBmCaption: function (caption) {
         this.$.bmCaption.setContent(caption);
     },
-    
+
     setNoteCaption: function (caption) {
         this.$.noteCaption.setContent(caption);
     },
-    
+
     setHlCaption: function (caption) {
         this.$.hlCaption.setContent(caption);
     },
-    
+
     open: function () {
         this.inherited(arguments);
         this.$.colorSelector.hide();
@@ -172,12 +172,12 @@ enyo.kind({
         this.$.colorSelector.show();
         this.$.csSelector.hide();
     },
-    
+
     openColors: function (inSender, inEvent) {
         this.$.colorSelector.show();
         this.$.csSelector.hide();
     },
-    
+
     highlightVerse: function (inSender, inEvent) {
         //enyo.log(inSender.color);
         this.color = inSender.color;
@@ -208,10 +208,10 @@ enyo.kind({
     sendSMS: function (inSender, inEvent) {
        this.$.palmService.call({
             id: 'com.palm.app.messaging',
-            params: {    
+            params: {
                 messageText: this.verse
             }
-        }); 
+        });
     },
 
     addRmBookmark: function (inSender, inEvent) {
@@ -225,7 +225,7 @@ enyo.kind({
         this.doEditBookmark();
         inSender.hold = true;
     },
-    
+
     closePopup: function() {
        this.close();
     }
@@ -244,26 +244,26 @@ enyo.kind({
     published: {
 		edit: false
 	},
-    caption: $L("Add A Note"), 
-    components:[        
+    caption: $L("Add A Note"),
+    components:[
         //{kind: "Scroller", style: "max-height: 300px; min-height: 50px;", components: [
             {name: "noteInput", kind: "RichText", className: "note-input", hint: $L("Add your note here."), changeOnInput: true, onfocus: "openCenter", onchange: "toggleButton"},
         //]},
-        {layoutKind: "HFlexLayout", style: "margin-top: 10px;", components: [  
+        {layoutKind: "HFlexLayout", style: "margin-top: 10px;", components: [
             {name: "btCancel", kind: "Button", caption: $L("Cancel"), flex: 1, onclick: "closePopup"},
             {name: "btAdd", kind: "Button", caption: $L("Add"), flex: 1, onclick: "addNote", className: "enyo-button-affirmative"}
         ]}
-        
+
     ],
-    
+
     getNote: function () {
         return this.$.noteInput.getHtml();
     },
-    
+
     setFocus: function () {
         this.$.noteInput.forceFocusEnableKeyboard();
     },
-	
+
 	toggleButton: function (inSender, inEvent) {
 		//enyo.log("INPUT:", inSender.getValue());
 		if (inSender.getValue() === "") {
@@ -272,7 +272,7 @@ enyo.kind({
 			this.$.btAdd.setDisabled(false);
 		}
 	},
-    
+
     clearInput: function () {
         this.dismissWithClick = false;
         this.$.noteInput.setValue("");
@@ -282,33 +282,33 @@ enyo.kind({
         this.edit = false;
         this.setFocus();
     },
-    
+
     setNote: function(noteText) {
         this.$.btAdd.hide();
         this.$.noteInput.setValue(noteText.replace(/"/g,""));
     },
-    
+
     addNote: function (inSender, inEvent) {
         console.log(this.$.noteInput.getValue());
         this.doAddNote();
         this.closePopup();
     },
-    
+
     setEditMode: function () {
         this.edit = true;
     },
-    
+
     showEditBt: function () {
         if (this.edit === true) {
             this.$.btAdd.setCaption($L("Edit"));
-            this.$.btAdd.show();    
-        }        
+            this.$.btAdd.show();
+        }
     },
-	
+
 	hideCancel: function () {
 		this.$.btCancel.hide();
 	},
-    
+
     openCenter: function() {
         //this.dismissWithClick = false;
 		//this.$.btCancel.show();
@@ -318,7 +318,7 @@ enyo.kind({
         this.doEditNote();
         this.close();
     },
-    
+
     closePopup: function () {
        this.close();
     }
@@ -341,7 +341,7 @@ enyo.kind({
         ]}
         //{kind: "Button", caption: $L("OK"), onclick: "closePopup", style: "margin-top:10px"}
     ],
-    
+
     setNote: function (note) {
         this.$.noteContent.setContent(note.replace(/"/g,""));
     },
@@ -351,7 +351,7 @@ enyo.kind({
             this.doNoteTap();
         }
     },
-    
+
     closePopup: function() {
        this.close();
     }
@@ -385,40 +385,40 @@ enyo.kind({
                     {caption: "Times", value: "Times"},
                     {caption: $L("Greek"), value: "greek"},
                     {caption: $L("Hebrew"), value: "hebrew"}
-                   
+
                 ]}
             ]}
-        ]}        
+        ]}
     ],
-    
+
     sliderChange: function (inSender, inEvent) {
         //enyo.log(inSender.position);
         this.fontSize = inSender.position;
         this.doFontSize();
     },
-    
+
     setFontSize: function (size) {
         if (size) {
             this.$.fontSlider.setPosition(size);
         } else {
             this.$.fontSlider.setPosition(20);
-        }        
+        }
     },
-    
+
     setFont: function (font) {
         if (font) {
-            if (font == enyo.application.hebrewFont) {
+            if (font == biblez.hebrewFont) {
                 this.$.fontSelector.setValue("hebrew");
-            } else if (font == enyo.application.greekFont) {
+            } else if (font == biblez.greekFont) {
                 this.$.fontSelector.setValue("greek");
             } else {
                 this.$.fontSelector.setValue(font);
-            }            
+            }
         } else {
             this.$.fontSelector.setValue("Prelude");
-        }        
+        }
     },
-    
+
     fontChanged: function(inSender, inValue, inOldValue) {
         this.font = inValue;
         this.doFont();
@@ -442,9 +442,9 @@ enyo.kind({
         note: "",
         editType: "bookmark"
     },
-    //caption: $L("Edit Bookmark"), 
+    //caption: $L("Edit Bookmark"),
     components:[
-        {name: "folderMenu", kind: "Menu", lazy: false},      
+        {name: "folderMenu", kind: "Menu", lazy: false},
         {name: "popupTitle", content: $L("Edit Bookmark"), className: "popup-edit-title"},
         {kind: "BasicScroller", autoVertical: true, style: "height: auto;", flex: 1, components: [
             {name: "titleInput", kind: "Input", hint: "", components: [
@@ -456,17 +456,17 @@ enyo.kind({
                     {content: $L("Folder"), className: "popup-label"}
                 ]},
                 {kind: "IconButton", flex: 1, icon: "images/folder.png", onclick: "openFolders"}
-                
-            ]},        
+
+            ]},
             {name: "tagsInput", kind: "RichText", hint: "", components: [
                 {content: $L("Tags"), className: "popup-label"}
             ]}
         ]},
-        {layoutKind: "HFlexLayout", style: "margin-top: 10px;", components: [  
+        {layoutKind: "HFlexLayout", style: "margin-top: 10px;", components: [
             {name: "btCancel", kind: "Button", caption: $L("Cancel"), flex: 1, onclick: "closePopup"},
             {name: "btAdd", kind: "Button", caption: $L("Edit"), flex: 1, onclick: "doEditData", className: "enyo-button-affirmative"}
         ]}
-        
+
     ],
 
     editTypeChanged: function (inSender, inEvent) {
@@ -516,7 +516,7 @@ enyo.kind({
                 comp[j].destroy();
             }
         }
-        
+
         var kindName = "";
         for (var i=0;i<folders.length;i++) {
             kindName = "folderItem" + i;
@@ -554,8 +554,8 @@ enyo.kind({
         repos: [],
         confirmed: false
     },
-    caption: $L("Warning"), 
-    components:[        
+    caption: $L("Warning"),
+    components:[
         {kind: "BasicScroller", autoVertical: true, style: "height: auto;", flex: 1, components: [
             {name: "warning", allowHtml: true, className: "popup-info", content: "Although Install Manager provides a convenient way for installing and upgrading SWORD components, it also uses a systematic method for accessing sites which gives packet sniffers a target to lock into for singling out users. <br><br>IF YOU LIVE IN A PERSECUTED COUNTRY AND DO NOT WISH TO RISK DETECTION, YOU SHOULD *NOT* USE INSTALL MANAGER'S REMOTE SOURCE FEATURES.<br><br>Also, Remote Sources other than CrossWire may contain less than quality modules, modules with unorthodox content, or even modules which are not legitimately distributable.  Many repositories contain wonderfully useful content.  These repositories simply are not reviewed or maintained by CrossWire and CrossWire cannot be held responsible for their content. CAVEAT EMPTOR.<br><br> If you understand this and are willing to enable remote source features then tap on 'Accept'"},
             {name: "repoList", kind: "VirtualRepeater", onSetupRow: "getRepoItems", components: [
@@ -571,7 +571,7 @@ enyo.kind({
             {name: "btReload", kind: "ActivityButton", caption: $L("Reload"), showing: false, flex: 1, onclick: "callAccept"},
             {name: "btAccept", kind: "ActivityButton", caption: $L("Accept"), flex: 1, onclick: "callAccept", className: "enyo-button-affirmative"}
         ]}
-        
+
     ],
 
     callAccept: function () {
@@ -585,7 +585,7 @@ enyo.kind({
     setActivity: function (spin) {
         this.$.btAccept.setActive(spin);
         this.$.btReload.setActive(spin);
-        
+
     },
 
     getRepoItems: function(inSender, inIndex) {
@@ -621,11 +621,11 @@ enyo.kind({
     },
 
     selectRepo: function (inSender, inEvent, rowIndex) {
-        enyo.application.dbSets.currentRepo = this.repos[rowIndex].name;
+        enyo.setCookie("currentRepo", this.repos[rowIndex].name);
         this.doSelectRepo();
         this.close();
     },
-    
+
     closePopup: function () {
         this.close();
         if (this.$.btAccept.showing)
@@ -634,10 +634,10 @@ enyo.kind({
 });
 
 enyo.kind({
-    kind: "ModalDialog", 
-    name: "BibleZ.Error", 
-    caption: "Error", 
-    lazy: false, 
+    kind: "ModalDialog",
+    name: "BibleZ.Error",
+    caption: "Error",
+    lazy: false,
     components:[
         {name: "errorMsg", content: "Error", className: "enyo-text-error warning-icon"},
         {kind: "Button", caption: $L("OK"), onclick: "closePopup", style: "margin-top:10px"}
@@ -648,7 +648,7 @@ enyo.kind({
     },
 
     setError: function (message) {
-       this.$.errorMsg.setContent(message); 
+       this.$.errorMsg.setContent(message);
     }
 });
 
@@ -662,20 +662,20 @@ enyo.kind({
            {content: $L("About ") + enyo.fetchAppInfo().title, className: "popup-title"},
            {content: "Version " + enyo.fetchAppInfo().version, className: "popup-version"},
            {style: "text-align: center;", components:[{kind: "Image", style: "width: 80px;", src: "images/biblezHD128.png"}]},
-           {content: $L("BibleZ HD is based on the") + " <a href='http://www.crosswire.org/sword'>" + $L("SWORD Project") + "</a> " + $L("and it is licensed under") + " <a href='http://www.gnu.org/licenses/gpl.txt'>GPLv3</a>.<br>&copy; 2010-2011 by <a href='http://zefanjas.de'>zefanjas.de</a>", className: "popup-info"},
-           {style: "text-align: center;", components:[{content: "<a href='http://www.facebook.com/pages/zefanjas/118603198178545'><img src='images/facebook_32.png'/></a>  <a href='http://twitter.com/biblez'><img src='images/twitter_32.png'/></a>"}]}   
+           {content: $L("BibleZ Pro HD is based on the") + " <a href='http://www.crosswire.org/sword'>" + $L("SWORD Project") + "</a> " + $L("and it is licensed under") + " <a href='http://www.gnu.org/licenses/gpl.txt'>GPLv3</a>.<br>&copy; 2010-2011 by <a href='http://zefanjas.de'>zefanjas.de</a>", className: "popup-info"},
+           {style: "text-align: center;", components:[{content: "<a href='http://www.facebook.com/pages/zefanjas/118603198178545'><img src='images/facebook_32.png'/></a>  <a href='http://twitter.com/biblez'><img src='images/twitter_32.png'/></a>"}]}
         ]},
         {kind: "HFlexBox", components: [
             {kind: "Button", flex: 1, caption: $L("Close"), onclick: "doCancel"},
             {kind: "Button", flex: 1, className: "enyo-button-affirmative", caption: $L("Send eMail"), onclick: "sendMail"}
         ]}
-        
+
     ],
-    
+
     doCancel: function () {
      this.close();
     },
-    
+
     sendMail: function () {
         this.$.palmService.call({
            id: 'com.palm.app.email',

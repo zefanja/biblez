@@ -1,10 +1,10 @@
 {
-  "id": "de.zefanjas.biblezpro.enyo",
+  "id": "de.zefanjas.biblezhdpro",
   "package_format_version": 2,
   "loc_name": "BibleZ Pro HD",
-  "version": "0.5.3",
+  "version": "0.6.0",
   "vendor": "zefanjas",
   "vendorurl": "zefanjas.de",
-  "app": "de.zefanjas.biblezpro.enyo",
-  "services": ["de.zefanjas.biblezpro.enyo.fileio"]
+  "app": "de.zefanjas.biblezhdpro",
+  "services": ["de.zefanjas.biblezhdpro.fileio"]
 }

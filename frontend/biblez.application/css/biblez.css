@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -19,8 +19,15 @@
 .enyo-modaldialog > * { height:100%; }
 
 .example-submenu .enyo-menuitem-icon {
-	padding: 0 5px 0 0; 
+	padding: 0 5px 0 0;
 	margin: -4px;
+}
+
+/* START */
+
+.start-label {
+    font-weight: bold;
+    font-size: 26px;
 }
 
 /* MAIN VIEW */
@@ -38,13 +45,42 @@ a {
 
 .view-verses {
     padding: 20px;
-	-webkit-column-width: 250px;
+	-webkit-column-width: 320px;
 	-webkit-column-gap: 40px;
     overflow: visible;
     width: auto;
-    /*background-color: rgba(255,0,0,0.5);
+    /*background-color: rgba(255,0,0,0.5); */
+    line-height: 1.3em;
     /* font-family:georgia,garamond,serif;
     font-size: 22px; */
+}
+
+.view-plain {
+    padding: 20px;
+}
+
+.view-header {
+    padding: 0px;
+    max-height: 52px;
+    background-color: rgba(0,0,0,0.9);
+    -webkit-border-image: url(../images/toolbar.png) 2 4 repeat stretch;
+    /* -webkit-border-image: none; */
+}
+
+.passage-label {
+    color: #F2F2F2;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.header-button {
+    margin: -10px 3px;
+    background-color: transparent;
+    color: #F5F5F5;
+    /*-webkit-border-image: none;
+    border: 2px solid #D8D8D8; */
 }
 
 .view-verses-single {
@@ -60,14 +96,42 @@ a {
     direction: rtl;
 }
 
+.split-button {
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    text-align: right;
+    -webkit-border-radius: 40px 0 0 0;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid #333;
+    /*-webkit-transition-property: all;
+    -webkit-transition-duration: .25s; */
+}
+
+.split-button-middle {
+    position: fixed;
+    bottom: 0px;
+    right: 0px;
+    width: 60px;
+    height: 30px;
+    line-height: 40px;
+    text-align: right;
+    -webkit-border-radius: 30px 30px 0 0;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid #333;
+    /*-webkit-transition-property: all;
+    -webkit-transition-duration: .25s; */
+}
+
 .splitview-verse {
     padding: 20px;
 }
 
-.splitview-left {
-    border-right: 1px solid;
-    /*border-width: 0px 20px 0px 0px;
-    -webkit-border-image: url(../images/sidebar-shadow.png) 0 20 0 0 repeat repeat; */
+.split-view {
+    border-left: 4px solid #333;
 }
 
 .splitview-right {
@@ -135,8 +199,13 @@ a {
     padding: 0.5em 0em 0.5em 0em;
 }
 
+.verse-intro {
+    padding: 0.5em 0em 0.5em 0em;
+    font-style: italic;
+}
+
 .module-item {
-    
+
 }
 
 .chapter-table {
@@ -148,17 +217,14 @@ a {
     -webkit-border-radius: 10px;
     background-color: rgba(205,133,63,0.5);
     font-weight: bold;
-    margin-top: 25%;
 }
 
 .chapter-nav-left {
     padding: 10px;
-    float: right;
-    margin-right: 10px;    
+    margin-right: 10px;
 }
 
 .chapter-nav-right {
-    float: left;
     padding: 10px;
     margin-left: 10px;
 }
@@ -191,7 +257,7 @@ a {
 }
 
 .search-container {
-	padding: 5px 10px 5px 10px;
+	padding: 10px 0px;
 }
 
 .sidebar-folder {
@@ -210,10 +276,55 @@ a {
     height: 11px;
 }
 
+/*POPUP LISTS */
+.biblez-popup {
+    min-height: 300px;
+}
+
+.popup-scroller {
+    margin-left: -10px;
+    margin-right: -10px;
+    margin-top: -10px;
+    margin-bottom: -10px;
+}
+
+.popup-scroller-container {
+    /* background-color: white; */
+    /* -webkit-border-radius: 5px;
+    border: 1px solid; */
+
+    -webkit-box-sizing: border-box;
+    border-width: 14px;
+    -webkit-border-image: url(../images/border.png) 14 14 14 14 stretch stretch;
+    box-sizing: border-box;
+}
+
+.list-title {
+    padding: 0px 10px;
+}
+
+.list-subtitle {
+    font-size: 0.8em;
+    font-style: italic;
+    padding: 0px 10px;
+}
+
+.list-icon {
+    height: 22px;
+}
+
 /*SELECTOR */
 
 .selector-scroller {
     width: 100%;
+}
+
+.selector-button {
+    background-color: yellow;
+    margin: 10px;
+    padding: 10px;
+    width: 25px;
+    float: left;
 }
 
 .book-selector {
@@ -264,7 +375,7 @@ a {
     font-size: 0.9em;
     padding-left: 20px;
     padding-right: 20px;
-    
+
 }
 
 .modules-button-install {
@@ -313,7 +424,7 @@ a {
     margin-top: 1em;
     margin-bottom: 1em;
     font-size: 0.8em;
-    text-align: center;   
+    text-align: center;
 }
 
 .popup-version {
@@ -321,7 +432,7 @@ a {
     margin-bottom: 1em;
     font-size: 0.7em;
     text-align: center;
-    
+
 }
 
 .verse-popup {
@@ -406,4 +517,22 @@ a {
 /*PREFERENCES */
 .prefs-container {
     max-width: 500px;
+}
+
+/*NOTE VIEW */
+.nv-title {
+    font-weight: bold;
+}
+
+.nv-passage {
+    font-size: 0.9em;
+}
+
+.nv-note {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    /*background-color: rgba(255,255,255,0.5);
+    -webkit-border-radius: 10px; */
+    padding: 10px 0px;
+    border-top: 1px solid #333;
 }

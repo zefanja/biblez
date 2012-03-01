@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -56,6 +56,7 @@ SWMgr *searchLibrary = 0;
 std::string searchModule = "";
 std::string searchTerm = "";
 std::string searchScope = "";
+std::string verseView = "";
 std::string remoteSource = "";
 std::string modName = "";
 int searchType = -2;
@@ -68,7 +69,7 @@ std::string convertString(std::string s) {
         } else {
             ss << s[i];
         }
-    } 
+    }
     return ss.str();
 }
 
@@ -84,11 +85,11 @@ void splitstring(std::string str, std::string separator, std::string &first, std
 			y += separator.length(); //jumping forward separator length
 			while(y != str.length()) {
 				second += str[y++]; //creating second string
-			}               
+			}
 		}
 	} else {
 		first = str;
-		second = ""; //if seperator is not there then second string == empty string 
+		second = ""; //if seperator is not there then second string == empty string
 	}
 }
 
@@ -109,8 +110,8 @@ int getdir (std::string dir, std::vector<std::string> &files)
 }
 
 std::string UpToLow(std::string str) {
-    for (int i=0;i<strlen(str.c_str());i++) 
-        if (str[i] >= 0x41 && str[i] <= 0x5A) 
+    for (int i=0;i<strlen(str.c_str());i++)
+        if (str[i] >= 0x41 && str[i] <= 0x5A)
             str[i] = str[i] + 0x20;
     return str;
 }
@@ -209,12 +210,12 @@ class MyStatusReporter : public StatusReporter {
 
         virtual void preStatus(long totalBytes, long completedBytes, const char *message) {
 			std::stringstream out;
-			
+
 			out << "{\"total\": \"" << totalBytes << "\", \"completed\": \"" << completedBytes << "\"}";
 
 			const std::string& tmp = out.str();
 			const char* cstr = tmp.c_str();
-			
+
 		    const char *params[1];
 			params[0] = cstr;
 			PDL_Err mjErr = PDL_CallJS("returnProgress", params, 1);
@@ -228,7 +229,7 @@ class MyStatusReporter : public StatusReporter {
 			std::cout << "\n\n" << message << "\n";
 			last = 0; */
 		}
-};      
+};
 
 
 void init() {
@@ -304,24 +305,24 @@ void *syncConfig(void *foo) {
 
 	if (!installMgr->refreshRemoteSourceConfiguration())
 		sources << "{\"returnValue\": true}";
-	else 
+	else
 		sources << "{\"returnValue\": false}";
 
 	const std::string& tmp = sources.str();
-	const char* cstr = tmp.c_str();
-	
+
     const char *params[1];
-	params[0] = cstr;
+	params[0] = tmp.c_str();
 	PDL_Err mjErr = PDL_CallJS("returnSyncConfig", params, 1);
+	//PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
 }
 
 PDL_bool callSyncConfig(PDL_JSParameters *parms) {
 	//initConfig();
 	pthread_t thread1;
 	int  iret1;
-    
+
 	char *foobar;
-	
+
 	iret1 = pthread_create( &thread1, NULL, syncConfig, (void *) foobar);
     return PDL_TRUE;
 }
@@ -346,11 +347,11 @@ PDL_bool uninstallModule(PDL_JSParameters *parms) {
 	refreshManagers();
 
 	const std::string& tmp = out.str();
-	const char* cstr = tmp.c_str();
-	
-    const char *params[1];
+
+    /*const char *params[1];
 	params[0] = cstr;
-	PDL_Err mjErr = PDL_CallJS("returnRemove", params, 1);
+	PDL_Err mjErr = PDL_CallJS("returnRemove", params, 1);*/
+	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
 	return PDL_TRUE;
 }
 
@@ -371,12 +372,12 @@ PDL_bool listRemoteSources(PDL_JSParameters *parms) {
 	sources << "]";
 
 	const std::string& tmp = sources.str();
-	const char* cstr = tmp.c_str();
-	
-    const char *params[1];
-	params[0] = cstr;
-	PDL_Err mjErr = PDL_CallJS("returnRemoteSources", params, 1);
-	return PDL_TRUE;	
+
+    //const char *params[1];
+	//params[0] = cstr;
+	//PDL_Err mjErr = PDL_CallJS("returnRemoteSources", params, 1);
+	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
+	return PDL_TRUE;
 }
 
 void *refreshRemoteSource(void *foo) {
@@ -395,7 +396,7 @@ void *refreshRemoteSource(void *foo) {
 
 	const std::string& tmp = out.str();
 	const char* cstr = tmp.c_str();
-	
+
     const char *params[1];
 	params[0] = cstr;
 	PDL_Err mjErr = PDL_CallJS("returnRefreshRemoteSource", params, 1);
@@ -405,10 +406,10 @@ PDL_bool callRefreshRemoteSource(PDL_JSParameters *parms) {
 	const char* sourceName = PDL_GetJSParamString(parms, 0);
 	pthread_t thread1;
 	int  iret1;
-    
+
 	char *foobar;
 	remoteSource = sourceName;
-	
+
 	iret1 = pthread_create( &thread1, NULL, refreshRemoteSource, (void *) foobar);
     return PDL_TRUE;
 }
@@ -439,8 +440,8 @@ void listModules(SWMgr *otherMgr = 0, bool onlyNewAndUpdates = false) {
 			out << "{\"name\": \"" << module->Name() << "\", ";
 			if (module->getConfigEntry("Lang")) {
 				out << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
-			}			
-			out << "\"datapath\": \"" << module->getConfigEntry("DataPath") << "\", ";			
+			}
+			out << "\"datapath\": \"" << module->getConfigEntry("DataPath") << "\", ";
 			out << "\"description\": \"" << module->getConfigEntry("Description") << "\"}";
 		}
 	}
@@ -448,7 +449,7 @@ void listModules(SWMgr *otherMgr = 0, bool onlyNewAndUpdates = false) {
 
 	const std::string& tmp = out.str();
 	const char* cstr = tmp.c_str();
-	
+
     const char *params[1];
 	params[0] = cstr;
 	PDL_Err mjErr = PDL_CallJS("returnListModules", params, 1);
@@ -476,7 +477,7 @@ PDL_bool getModuleDetails (PDL_JSParameters *parms) {
 	const char* moduleName = PDL_GetJSParamString(parms, 0);
 	const char* sourceName = PDL_GetJSParamString(parms, 1);
 	std::stringstream mod;
-	
+
 	init();
 	InstallSourceMap::iterator source = installMgr->sources.find(sourceName);
 	if (source == installMgr->sources.end()) {
@@ -484,18 +485,18 @@ PDL_bool getModuleDetails (PDL_JSParameters *parms) {
 		finish(-3);
 		return PDL_FALSE;
 	}
-	
+
 	SWMgr* confReader = source->second->getMgr();
 	SWModule *module = confReader->getModule(moduleName);
 	if (!module) {
 		PDL_JSException(parms, "getModuleDetails: Couldn't find Module");
 		return PDL_FALSE;
 	}
-	
-	mod << "{";	
-	
-	mod << "\"name\": \"" << module->Name() << "\"";			
-	mod << ", \"datapath\": \"" << module->getConfigEntry("DataPath") << "\"";			
+
+	mod << "{";
+
+	mod << "\"name\": \"" << module->Name() << "\"";
+	mod << ", \"datapath\": \"" << module->getConfigEntry("DataPath") << "\"";
 	mod << ", \"description\": \"" << convertString(module->getConfigEntry("Description")) << "\"";
 	if (module->getConfigEntry("Lang")) mod << ", \"lang\": \"" << module->getConfigEntry("Lang") << "\"";
 	if (module->getConfigEntry("Versification")) mod << ", \"versification\": \"" << module->getConfigEntry("Versification") << "\"";
@@ -505,15 +506,15 @@ PDL_bool getModuleDetails (PDL_JSParameters *parms) {
 	if (module->getConfigEntry("Copyright")) mod << ", \"copyright\": \"" << convertString(module->getConfigEntry("Copyright")) << "\"";
 	if (module->getConfigEntry("DistributionLicense")) mod << ", \"distributionLicense\": \"" << module->getConfigEntry("DistributionLicense") << "\"";
 	if (module->getConfigEntry("Category")) mod << ", \"category\": \"" << module->getConfigEntry("Category") << "\"";
-	
+
 	mod << "}";
-	
+
 	const std::string& tmp = mod.str();
-	const char* cstr = tmp.c_str();
-		
-	const char *params[1];
-	params[0] = cstr;
-	PDL_Err mjErr = PDL_CallJS("returnGetDetails", params, 1);
+
+	//const char *params[1];
+	//params[0] = cstr;
+	//PDL_Err mjErr = PDL_CallJS("returnGetDetails", params, 1);
+	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
     return PDL_TRUE;
 }
 
@@ -550,10 +551,10 @@ void *remoteInstallModule(void *foo) {
 
 	//Refresh Mgr
 	refreshManagers();
-	
+
 	const std::string& tmp = out.str();
 	const char* cstr = tmp.c_str();
-		
+
 	const char *params[1];
 	params[0] = cstr;
 	PDL_Err mjErr = PDL_CallJS("returnUnzip", params, 1);
@@ -564,11 +565,11 @@ PDL_bool callRemoteInstallModule(PDL_JSParameters *parms) {
 	const char* moduleName = PDL_GetJSParamString(parms, 1);
 	pthread_t thread1;
 	int  iret1;
-    
+
 	char *foobar;
 	remoteSource = sourceName;
 	modName = moduleName;
-	
+
 	iret1 = pthread_create( &thread1, NULL, remoteInstallModule, (void *) foobar);
     return PDL_TRUE;
 }
@@ -601,9 +602,9 @@ PDL_bool getModules(PDL_JSParameters *parms) {
 
 	ModMap::iterator it;
 	const char* modType = PDL_GetJSParamString(parms, 0);
-	
+
 	modules << "[";
-	
+
 	for (it = displayLibrary->Modules.begin(); it != displayLibrary->Modules.end(); it++) {
 		SWModule *module = (*it).second;
 		if (strcmp(modType, "all") != 0) {
@@ -630,15 +631,16 @@ PDL_bool getModules(PDL_JSParameters *parms) {
 			}
 			modules << "\"dataPath\":\"" << module->getConfigEntry("DataPath") << "\", ";
 			modules << "\"descr\": \"" << convertString(module->Description()) << "\"}";
-		}		
+		}
 	}
 
 	modules << "]";
-	
+
 	modStr = modules.str();
-	const char *params[1];
-	params[0] = modStr.c_str();
-	PDL_Err mjErr = PDL_CallJS("returnModules", params, 1);
+	//char reply[1024];
+	//snprintf(reply, 1024, "%s", modStr.c_str());
+	//reply[0] = modStr.c_str();
+	PDL_Err mjErr = PDL_JSReply(parms, modStr.c_str());
     return PDL_TRUE;
 }
 
@@ -646,15 +648,19 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	/*Get verses from a specific module (e.g. "ESV"). Set your biblepassage in key e.g. "James 1:19" */
 	const char* moduleName = PDL_GetJSParamString(parms, 0);
 	const char* key = PDL_GetJSParamString(parms, 1);
-	const char* side = PDL_GetJSParamString(parms, 2);
+	//const char* side = PDL_GetJSParamString(parms, 2);
 	std::stringstream passage;
 	std::stringstream tmpPassage;
 	std::stringstream out;
 
-	passage << "{\"bookName\": \"" << VerseKey(key).getBookName() << "\", \"cnumber\": \"" << VerseKey(key).Chapter()  << "\", \"vnumber\": \"" << VerseKey(key).Verse() << "\"}";
-	
-	tmpPassage << VerseKey(key).getBookName() << " " << VerseKey(key).Chapter();
 	SWModule *module = displayLibrary->getModule(moduleName);
+	module->setKey(key);
+
+	VerseKey *vk = (VerseKey*)module->getKey();
+	vk->Headings(true);
+
+	passage << "{\"bookName\": \"" << vk->getBookName() << "\", \"cnumber\": \"" << vk->Chapter()  << "\", \"vnumber\": \"" << vk->Verse() << "\", \"passage\" : \"" << vk->getShortText() << "\", \"abbrev\": \"" << vk->getBookAbbrev() << "\"}";
+	tmpPassage << vk->getBookName() << " " << vk->Chapter();
 	ListKey verses = VerseKey().ParseVerseList(tmpPassage.str().c_str(), "", true);
 
 	AttributeTypeList::iterator i1;
@@ -662,26 +668,19 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	AttributeValue::iterator i3;
 
 	out << "[";
-	
+
 	for (verses = TOP; !verses.Error(); verses++) {
-		module->setKey(verses);
+		vk->setText(verses);
+
 		if (strcmp(module->RenderText(), "") != 0) {
 			//headingOn = 0;
 			out << "{\"content\": \"" << convertString(module->RenderText()) << "\", ";
-			out << "\"vnumber\": \"" << VerseKey(module->getKeyText()).Verse() << "\", ";
-			out << "\"cnumber\": \"" << VerseKey(module->getKeyText()).Chapter() << "\"";
-			
+			out << "\"vnumber\": \"" << vk->Verse() << "\", ";
+			out << "\"cnumber\": \"" << vk->Chapter() << "\"";
+			out << ", \"heading\": \"" << module->getEntryAttributes()["Heading"]["Preverse"]["0"].c_str() << "\"";
+
 			for (i1 = module->getEntryAttributes().begin(); i1 != module->getEntryAttributes().end(); i1++) {
-				if (strcmp(i1->first, "Heading") == 0) {
-					for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++) {
-						if (strcmp(i2->first, "Preverse") == 0) {
-							for (i3 = i2->second.begin(); i3 != i2->second.end(); i3++) {
-								out << ", \"heading\": \"" << convertString(i3->second.c_str()) << "\"";
-								//headingOn = 1;
-							}
-						}
-					}
-				} else if (strcmp(i1->first, "Footnote") == 0) {
+				if (strcmp(i1->first, "Footnote") == 0) {
 					out << ", \"footnotes\": [";
 					for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++) {
 						out << "{";
@@ -701,6 +700,12 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 				}
 			}
 
+			if (vk->Chapter() == 1 && vk->Verse() == 1) {
+				vk->setChapter(0);
+				vk->setVerse(0);
+				out << ", \"intro\": \"" << convertString(module->RenderText()) << "\"";
+			}
+
 			out << "}";
 
 			ListKey helper = verses;
@@ -710,25 +715,25 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 			}
 		}
 	}
-	
+
 	out << "]";
-	
+
 	/*if (out.str() == "[]") {
 		PDL_JSException(parms, "getVerses: Chapter is not available in this module!");
 		return PDL_FALSE;
 	}*/
 
-	const std::string& tmp = out.str();
-	const char* cstr = tmp.c_str();
+	out << "<#split#>" << passage.str();
 
-	const std::string& tmp2 = passage.str();
-	const char* biblePassage = tmp2.c_str();
-	
-	const char *params[3];
-	params[0] = cstr;
-	params[1] = side;
-	params[2] = biblePassage;
-	PDL_Err mjErr = PDL_CallJS("returnVerses", params, 3);
+	const std::string& tmp = out.str();
+	//const std::string& tmp2 = passage.str();
+
+	//const char *params[2];
+	//params[0] = tmp.c_str();
+	//params[1] = side;
+	//params[1] = tmp2.c_str();
+	//PDL_Err mjErr = PDL_CallJS("returnVerses", params, 2);
+	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
     return PDL_TRUE;
 }
 
@@ -736,21 +741,21 @@ PDL_bool getBooknames(PDL_JSParameters *parms) {
 	const char* moduleName = PDL_GetJSParamString(parms, 0);
 	std::stringstream bnames;
 	std::string bnStr;
-	
+
 	SWModule *module = displayLibrary->getModule(moduleName);
 	if (!module) {
 		PDL_JSException(parms, "getBooknames: Couldn't find Module");
 		return PDL_FALSE;  // assert we found the module
 	}
-	
+
 	VerseKey *vkey = dynamic_cast<VerseKey *>(module->getKey());
 	if (!vkey) {
 		PDL_JSException(parms, "getBooknames: Couldn't find verse!");
 		return PDL_FALSE;    // assert our module uses verses
 	}
-	
+
 	VerseKey &vk = *vkey;
-	
+
 	bnames << "[";
 	for (int b = 0; b < 2; b++)	{
 		vk.setTestament(b+1);
@@ -766,13 +771,13 @@ PDL_bool getBooknames(PDL_JSParameters *parms) {
 			}
 		}
 	}
-	
+
 	const std::string& tmp = bnames.str();
-	const char* cstr = tmp.c_str();
-	
-	const char *params[1];
-	params[0] = cstr;
-	PDL_Err mjErr = PDL_CallJS("returnBooknames", params, 1);
+
+	//const char *params[1];
+	//params[0] = cstr;
+	//PDL_Err mjErr = PDL_CallJS("returnBooknames", params, 1);
+	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
     return PDL_TRUE;
 }
 
@@ -793,7 +798,7 @@ void *handleSearch(void *foo) {
 	ListKey listkey;
 	ListKey scope;
 	SWModule *module = searchLibrary->getModule(searchModule.c_str());
-	
+
 	SWKey *k = module->getKey();
 	VerseKey *parser = SWDYNAMIC_CAST(VerseKey, k);
 	VerseKey kjvParser;
@@ -801,11 +806,11 @@ void *handleSearch(void *foo) {
     scope = parser->ParseVerseList(searchScope.c_str(), *parser, true);
 	scope.Persist(1);
 	module->setKey(scope);
-	
+
 	ListKey verses = module->search(searchTerm.c_str(), searchType, REG_ICASE, 0, 0, &percentUpdate, &c);
-	
+
     results << "[";
-    
+
 	for (verses = TOP; !verses.Error(); verses++) {
 		module->setKey(verses);
 		results << "{\"passage\": \"" << VerseKey(module->getKeyText()).getShortText() << "\", ";
@@ -818,17 +823,18 @@ void *handleSearch(void *foo) {
             results << ", ";
         }
 	}
-    
+
     results << "]";
-	
+
     //results << verses.getRangeText();
-	
+
 	const std::string& tmp = results.str();
 	const char* cstr = tmp.c_str();
-	
-	const char *params[1];
+
+	const char *params[2];
 	params[0] = cstr;
-	PDL_Err mjErr = PDL_CallJS("returnSearch", params, 1);
+	params[1] = verseView.c_str();
+	PDL_Err mjErr = PDL_CallJS("returnSearch", params, 2);
 }
 
 PDL_bool search(PDL_JSParameters *parms) {
@@ -836,15 +842,18 @@ PDL_bool search(PDL_JSParameters *parms) {
     const char* searchStr = PDL_GetJSParamString(parms, 1);
     const char* scopeVerses = PDL_GetJSParamString(parms, 2);
     int type = PDL_GetJSParamInt(parms, 3);
+    const char* view = PDL_GetJSParamString(parms, 4);
+
 	pthread_t thread1;
 	int  iret1;
-    
+
 	char *foobar;
 	searchModule = moduleName;
 	searchTerm = searchStr;
 	searchScope = scopeVerses;
     searchType = type;
-	
+    verseView = view;
+
 	iret1 = pthread_create( &thread1, NULL, handleSearch, (void *) foobar);
     return PDL_TRUE;
 }
@@ -853,16 +862,16 @@ PDL_bool getVMax(PDL_JSParameters *parms) {
 	/*Get max number of verses in a chapter*/
 	std::stringstream vmax;
 	const char* key = PDL_GetJSParamString(parms, 0);
-	
+
 	VerseKey vk(key);
 	vmax << vk.getVerseMax();
-	
+
 	const std::string& tmp = vmax.str();
-	const char* cstr = tmp.c_str();
-	
-	const char *params[1];
-	params[0] = cstr;
-	PDL_Err mjErr = PDL_CallJS("returnVMax", params, 1);
+
+	//const char *params[1];
+	//params[0] = cstr;
+	//PDL_Err mjErr = PDL_CallJS("returnVMax", params, 1);
+	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
     return PDL_TRUE;
 }
 
@@ -873,17 +882,17 @@ PDL_bool untarMods(PDL_JSParameters *parms) {
 	pathBuilder << "tar -xzf " << pathMods << " -C /media/internal/.sword/install/";
 	const std::string& tmp = pathBuilder.str();
 	const char* cstr = tmp.c_str();
-	
+
 	int err = system(cstr);
 	if (err != 0) {
 		PDL_JSException(parms, "untarMods: Couldn't untar Module");
 		return PDL_FALSE;
 	}
-	
+
 	errString << err;
 	const std::string& tmp2 = errString.str();
 	const char* cstr2 = tmp2.c_str();
-	
+
     const char *params[1];
 	params[0] = cstr2;
 	PDL_Err mjErr = PDL_CallJS("returnUntar", params, 1);
@@ -893,23 +902,23 @@ PDL_bool untarMods(PDL_JSParameters *parms) {
 /*PDL_bool removeModule(PDL_JSParameters *parms) {
 	const char* pathMod = PDL_GetJSParamString(parms, 0);
 	const char* modName = PDL_GetJSParamString(parms, 1);
-	
+
 	std::stringstream pathBuilder;
 	std::stringstream errString;
-	
+
 	pathBuilder << "rm -R " << "/media/internal/.sword/" << pathMod;
 	int err1 = system(pathBuilder.str().c_str());
-	
+
 	pathBuilder.str("");
 	pathBuilder << "rm " << "/media/internal/.sword/mods.d/" << modName << ".conf";
 	int err2 = system(pathBuilder.str().c_str());
-	
+
 	//Refresh Mgr
 	refreshManagers();
-	
+
 	const std::string& tmp = errString.str();
 	const char* cstr = tmp.c_str();
-	
+
     const char *params[1];
 	params[0] = cstr;
 	PDL_Err mjErr = PDL_CallJS("returnRemove", params, 1);
@@ -926,12 +935,12 @@ PDL_bool checkPlugin(PDL_JSParameters *parms) {
 PDL_bool readConfs(PDL_JSParameters *parms) {
 	/*Get information about all available modules*/
 	std::stringstream mods;
-	
+
 	SWMgr confReader("/media/internal/.sword/install", new MarkupFilterMgr(FMT_HTMLHREF));
 	ModMap::iterator it;
-	
+
 	mods << "[";
-	
+
 	for (it = confReader.Modules.begin(); it != confReader.Modules.end(); it++) {
 		SWModule *module = it->second;
 		if (it != confReader.Modules.begin()) {
@@ -940,12 +949,12 @@ PDL_bool readConfs(PDL_JSParameters *parms) {
 		mods << "{\"name\": \"" << module->Name() << "\", ";
 		if (module->getConfigEntry("Lang")) {
 			mods << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
-		}			
-		mods << "\"datapath\": \"" << module->getConfigEntry("DataPath") << "\", ";			
+		}
+		mods << "\"datapath\": \"" << module->getConfigEntry("DataPath") << "\", ";
 		mods << "\"description\": \"" << module->getConfigEntry("Description") << "\"}";
 	}
 
-	
+
 	/*std::string dir = std::string("/media/internal/.sword/install/mods.d/");
     std::vector<std::string> files = std::vector<std::string>();
 
@@ -982,16 +991,16 @@ PDL_bool readConfs(PDL_JSParameters *parms) {
 			} else {
 				mods << "}";
 			}
-			
+
 			infile.close();
 		}
     } */
-	
+
 	mods << "]";
-	
+
 	const std::string& tmp = mods.str();
 	const char* cstr = tmp.c_str();
-		
+
 	const char *params[1];
 	params[0] = cstr;
 	PDL_Err mjErr = PDL_CallJS("returnReadConfs", params, 1);
@@ -1005,32 +1014,32 @@ PDL_bool unzipModule(PDL_JSParameters *parms) {
     int err;
     FILE* fout=NULL;
 	uInt size_buf = WRITEBUFFERSIZE;  // byte size of buffer to store raw csv data
-    void* buf;                        // the buffer  
+    void* buf;                        // the buffer
     char filename_inzip[256];         // for unzGetCurrentFileInfo
-    unz_file_info file_info;          // for unzGetCurrentFileInfo	
+    unz_file_info file_info;          // for unzGetCurrentFileInfo
 	std::string tmpPath = "";
 	std::string writeFilename = "";
 	std::string pathPrefix = "/media/internal/.sword/";
 	std::string sout;
 	std::stringstream pathBuilder;
 	unzFile uf=NULL;
-	
+
 	uf = unzOpen(pathModule);
 
     err = unzGetGlobalInfo64(uf,&gi);
-	
+
 	if (err!=UNZ_OK)
         std::cout << "error with zipfile in unzGetGlobalInfo \n";
-		
+
 	//std::cout << gi.number_entry << "\n";
-	
+
 	for (i=0;i<gi.number_entry;i++) {
 		tmpPath = "";
 		writeFilename = "";
 		err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
-		
+
 		//std::cout << filename_inzip << std::endl;
-		
+
 		const std::vector<std::string> words = split(filename_inzip, "/");
 		for (int j = 0; j < words.size()-1; j++) {
 			tmpPath = tmpPath + words[j] + "/";
@@ -1040,32 +1049,32 @@ PDL_bool unzipModule(PDL_JSParameters *parms) {
 				writeFilename = words[j];
 			}*/
 		}
-		
+
 		pathBuilder.str("");
-		pathBuilder << "mkdir -p " << pathPrefix << tmpPath;		
+		pathBuilder << "mkdir -p " << pathPrefix << tmpPath;
 		const std::string& tmp = pathBuilder.str();
 		const char* cstr = tmp.c_str();
-		
+
 		writeFilename = pathPrefix + filename_inzip;
-		
+
 		std::cout << writeFilename << std::endl;
-		
+
 		err = system(cstr);
-		
-		
+
+
 		buf = (void*)malloc(size_buf); // setup buffer
 		if (buf==NULL) {
 			std::cerr << "Error allocating memory for read buffer" << std::endl;
 		} // buffer ready
-		
+
 		err = unzOpenCurrentFile(uf); // Open the file inside the zip (password = NULL)
 		if (err!=UNZ_OK) {
 			std::cerr << "Error " << err << " with zipfile in unzOpenCurrentFilePassword." << std::endl;
 		} // file inside the zip is open
-		
-		
+
+
 		std::ofstream fout(writeFilename.c_str(), std::ios::binary);
-		
+
 		do {
 			err = unzReadCurrentFile(uf,buf,size_buf);
 			if (err<0) {
@@ -1076,16 +1085,16 @@ PDL_bool unzipModule(PDL_JSParameters *parms) {
 			fout.write((const char*)buf,err);
 			//if (err>0) for (int i = 0; i < (int) err; i++) fout.write((char*)&buf[i],sizeof(&buf[i]);
 		} while (err>0);
-		
+
 		fout.close();
-		
+
 		err = unzCloseCurrentFile (uf);  // close the zipfile
 		if (err!=UNZ_OK) {
 				std::cerr << "Error " << err << " with zipfile in unzCloseCurrentFile" << std::endl;
 			}
-	 
-		
-		
+
+
+
         if ((i+1)<gi.number_entry) {
             err = unzGoToNextFile(uf);
             if (err!=UNZ_OK) {
@@ -1094,12 +1103,12 @@ PDL_bool unzipModule(PDL_JSParameters *parms) {
             }
         }
     }
-	
+
 	free(buf); // free up buffer memory
-	
+
 	//Refresh Mgr
 	refreshManagers();
-	
+
 	const char *params[1];
 	params[0] = "true";
 	PDL_Err mjErr = PDL_CallJS("returnUnzip", params, 1);
@@ -1112,19 +1121,19 @@ int main () {
 	system("mkdir -p /media/internal/biblez/");
 	//system("chmod -R 777 /media/internal/.sword/");
 	putenv("SWORD_PATH=/media/internal/.sword");
-	
+
 	//Initialize Mgr
 	refreshManagers();
-	
+
 	// Initialize the SDL library
     int result = SDL_Init(SDL_INIT_VIDEO);
-		
+
 	if (result != 0) {
         exit(1);
     }
 
     PDL_Init(0);
-    
+
     // register the js callback
     PDL_RegisterJSHandler("getModules", getModules);
 	PDL_RegisterJSHandler("getVerses", getVerses);
@@ -1146,11 +1155,11 @@ int main () {
     PDL_RegisterJSHandler("uninstallModule", uninstallModule);
 
 	PDL_JSRegistrationComplete();
-	
+
 	PDL_CallJS("ready", NULL, 0);
 
 
-	
+
 	// Event descriptor
     SDL_Event event;
 
@@ -1158,10 +1167,10 @@ int main () {
 		SDL_WaitEvent(&event);
 
     } while (event.type != SDL_QUIT);
-	
+
 	// Cleanup
     PDL_Quit();
     SDL_Quit();
-	
+
 	return 0;
 }

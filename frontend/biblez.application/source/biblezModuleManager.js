@@ -1,41 +1,45 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
 enyo.kind({
-	name: "BibleZ.ModMan",
+	name: "App.ModMan",
 	kind: enyo.VFlexBox,
     events: {
         onUntar: "",
 		onBack: "",
-		onUnzip: "",
+		onInstallModule: "",
 		onRemove: "",
 		onGetDetails: "",
         onGetRepos: "",
         onGetSync: "",
         onRefreshSource: "",
-        onListModules: ""
+        onListModules: "",
+        onGetModules: "",
+        onModulesChanged: ""
     },
 	published: {
 		installedModules: [],
 		moduleToRemove: {},
         moduleToInstall: "",
+        lang: [],
+        modules: [],
         modulePath: "",
         allModsPath: ""
 	},
 	components: [
-        {kind: enyo.PalmService, 
+        {kind: enyo.PalmService,
             name: "DownloadMgr",
             service: "palm://com.palm.downloadmanager/",
             method: "download",
@@ -51,7 +55,7 @@ enyo.kind({
 			{kind: "Spacer"},
 			{kind: "Spinner", showing: false},
             {kind: "ListSelector", name: "repoSelector", onChange: "reloadRepo"}
-			
+
 		]},
         {name: "errorDialog", kind: "BibleZ.Error"},
         {name: "reposPopup", kind: "BibleZ.Repos", onAccept: "doGetSync", onSelectRepo: "callRefreshSource", onDenied: "doBack"},
@@ -111,22 +115,20 @@ enyo.kind({
 						{name: "detailsCopyright", className: "details-info"},
 						{name: "detailsLicense", className: "details-info"},
 						{name: "detailsAVN", className: "details-info"}
-					]}					
+					]}
                 ]},
                 {kind: "Toolbar", components: [
-                    {kind: "GrabButton"}					
+                    {kind: "GrabButton"}
                 ]}
 			]}
 		]}
 	],
-    
+
     create: function () {
         this.inherited(arguments);
-		this.lang = [];
-		this.modules = [];
 		this.$.detailsContainer.hide();
     },
-	
+
 	refreshModules: function (inSender, inEvent) {
 		this.$.spinner.show();
 		enyo.windows.addBannerMessage($L("Downloading List of available Modules..."), enyo.json.stringify({}));
@@ -135,9 +137,9 @@ enyo.kind({
 
     getRepos: function () {
         //enyo.log(enyo.application.dbSets.syncRepos);
-        if (enyo.application.dbSets.syncRepos !== "true") {
+        if (enyo.getCookie("syncRepos") !== "true") {
             this.$.reposPopup.openAtCenter();
-        } else if (!enyo.application.dbSets.currentRepo) {
+        } else if (!enyo.getCookie("currentRepo")) {
             this.doGetRepos();
         } else {
             this.getLang();
@@ -147,20 +149,20 @@ enyo.kind({
     handleGotSyncConfig: function (reponse) {
         //enyo.log(reponse);
         if (enyo.json.parse(reponse).returnValue) {
-            enyo.application.dbSets.syncRepos = "true";
+            enyo.setCookie("syncRepos", "true");
             this.doGetRepos();
         } else {
             this.showError($L("Couldn't get repositories. Please check your internet connection!"));
-            enyo.application.dbSets.syncRepos = "false";
+            enyo.setCookie("syncRepos", "false");
         }
         this.$.reposPopup.setActivity(false);
     },
 
     handleGotRepos: function (reponse) {
-        enyo.log(this.$.reposPopup.showing);
+        //enyo.log(this.$.reposPopup.showing);
         var repos = enyo.json.parse(reponse);
         if (repos.length !== 0) {
-            enyo.application.dbSets.remoteRepos = reponse;
+            enyo.setCookie("remoteRepos", reponse);
             this.$.reposPopup.setConfirmed(true);
             this.$.reposPopup.setRepos(repos);
             if(!this.$.reposPopup.showing)
@@ -168,7 +170,6 @@ enyo.kind({
         } else {
             this.showError($L("No Repositories found :("));
         }
-        
     },
 
     callRefreshSource: function () {
@@ -177,10 +178,10 @@ enyo.kind({
     },
 
     reloadRepo: function (inSender, inValue, inOldValue) {
-        enyo.application.dbSets.currentRepo = inValue;
+        enyo.setCookie("currentRepo", inValue);
         this.doListModules();
     },
-    
+
     downloadMods: function(update) {
 		//console.log(enyo.json.stringify(this.dbSets["lastModUpdate"]));
         if (!enyo.application.dbSets.lastModUpdate) {
@@ -192,7 +193,7 @@ enyo.kind({
 			this.getLang();
 		}
     },
-	
+
 	downloadAddIn: function () {
 		this.$.btInstall.setPosition(0);
 		this.$.btInstallCaption.setContent($L("Installing..."));
@@ -202,13 +203,13 @@ enyo.kind({
         this.$.btInstall.setCaption($L("Installing..."));
         this.$.btInstall.setActive(true);
         this.$.btInstall.setDisabled(true); */
-        this.doUnzip();
+        this.doInstallModule();
 	},
-    
+
     updateStatus: function (inSender, inResponse) {
-        this.log("STATUS", enyo.json.stringify(inResponse));    
+        this.log("STATUS", enyo.json.stringify(inResponse));
     },
-    
+
     downloadFinished: function (inSender, inResponse) {
 		console.log(enyo.json.stringify(inResponse));
 		this.$.btInstall.setMaximum(inResponse.amountTotal);
@@ -224,25 +225,25 @@ enyo.kind({
 				this.modulePath = inResponse.target;
 				this.doUnzip();
 			}
-			
+
         } else {
             this.log("INFO", "Downloading");
         }
     },
-	
+
 	getLang: function () {
 		//this.$.langList.render();
 		enyo.log("Getting languages...");
-		biblezTools.getLang(enyo.bind(this, this.setLang));
+		api.getLang(enyo.bind(this, this.setLang));
         var repos = [];
-        var tmpRepos = enyo.json.parse(enyo.application.dbSets.remoteRepos);
+        var tmpRepos = enyo.json.parse(enyo.getCookie("remoteRepos"));
         for (var i=0;i<tmpRepos.length; i++) {
             repos.push({caption: tmpRepos[i].name, value: tmpRepos[i].name});
         }
         this.$.repoSelector.setItems(repos);
-        this.$.repoSelector.setValue(enyo.application.dbSets.currentRepo);
+        this.$.repoSelector.setValue(enyo.getCookie("currentRepo"));
 	},
-	
+
 	setLang: function(lang) {
 		//console.log(lang);
         this.$.scrollerLeft.scrollTo(0,0);
@@ -260,7 +261,7 @@ enyo.kind({
         this.$.spinner.hide();
 
 	},
-	
+
 	getLangListItem: function(inSender, inIndex) {
         var r = this.lang[inIndex];
 		this.tmpLang = "";
@@ -268,7 +269,7 @@ enyo.kind({
 			//console.log(r + " - " + this.tmpLang);
 			this.$.langCode.setContent(r);
 			this.$.langName.setContent((languages[r]) ? (languages[r]) : r);
-            
+
 			var isRowSelected = (inIndex == this.lastLangItem);
 			this.$.itemLang.applyStyle("background", isRowSelected ? "#3A8BCB" : null);
             return true;
@@ -276,16 +277,16 @@ enyo.kind({
             return false;
         }
     },
-	
+
 	getModules: function (inSender, inEvent, rowIndex) {
 		this.$.detailsContainer.hide();
-		biblezTools.getModules(this.lang[rowIndex], enyo.bind(this, this.setModules));
+		api.getModules(this.lang[rowIndex], enyo.bind(this, this.setModules));
 		this.lastLangItem = rowIndex;
 		this.lastModItem = null;
 		this.$.langList.render();
 		this.$.scrollerMiddle.scrollTo(0,0);
 	},
-	
+
 	setModules: function (modules) {
 		//console.log(modules);
 		this.modules = modules;
@@ -296,9 +297,9 @@ enyo.kind({
 			this.$.modHint.show();
 			this.$.modHint.setContent($L("No Module available"));
 		}
-		
+
 	},
-	
+
 	getModListItem: function(inSender, inIndex) {
         var r = this.modules[inIndex];
         if (r) {
@@ -315,52 +316,78 @@ enyo.kind({
             return false;
         }
     },
-	
+
 	getDetails: function (inSender, inEvent, rowIndex) {
 		//this.$.spinner.show();
 		this.lastModItem = rowIndex;
 		this.$.modList.render();
 		this.$.scrollerRight.scrollTo(0,0);
-		
+
 		this.moduleToInstall = this.modules[rowIndex].modName;
 		this.doGetDetails();
 	},
-	
+
 	showDetails: function (details) {
+        details = enyo.json.parse(details);
 		this.$.btInstall.show();
 		this.$.btRemove.hide();
 		this.$.btInstallCaption.setContent($L("Install"));
 		this.$.btInstall.setMaximum(100);
 		this.$.btInstall.setPosition(100);
-		
+
 		this.$.detailsName.setContent(details.name);
 		this.$.detailsDescription.setContent(details.description);
 		this.$.detailsAbout.setContent(details.about.replace(/\\par/g, "<br>"));
-		this.$.detailsSize.setContent($L("Install Size") + ": " + Math.round(parseInt(details.installSize) / 1048576 * 100) / 100 + " MB");
+		this.$.detailsSize.setContent($L("Install Size") + ": " + Math.round(parseInt(details.installSize, 10) / 1048576 * 100) / 100 + " MB");
 		this.$.detailsVersion.setContent($L("Version") + ": " + details.version);
-		if (details.copyright) {this.$.detailsCopyright.setContent($L("Copyright") + ": " + details.copyright)};
+		if (details.copyright) {this.$.detailsCopyright.setContent($L("Copyright") + ": " + details.copyright);}
 		if (details.distributionLicense) {this.$.detailsLicense.setContent($L("License") + ": " + details.distributionLicense);}
 		//this.$.detailsType.setContent($L("Type") + ": " + details.category);
 		//var tmpLang = (languages[details.lang]) ? (languages[details.lang]) : details.lang;
 		//this.$.detailsLang.setContent($L("Language") + ": " + tmpLang);
-		
-		for(var i=0;i<this.installedModules.length;i++) {
-			if(this.installedModules[i].name ==  details.name) {
+
+		for(var i=0;i<biblez.modules.length;i++) {
+			if(biblez.modules[i].name ==  details.name) {
 				this.$.btInstall.hide();
 				this.$.btRemove.show();
-				this.moduleToRemove = this.installedModules[i];
+				this.moduleToRemove = biblez.modules[i];
 			}
 		}
-		
+
 		this.$.detailsContainer.show();
 		//this.$.spinner.hide();
 	},
-	
+
 	removeModule: function(inSender, inEvent) {
 		this.doRemove();
 		this.$.btInstall.show();
 		this.$.btRemove.hide();
 	},
+
+    handleRemove: function (response) {
+        enyo.log("REMOVE: " + response);
+        if (enyo.json.parse(response).returnValue) {
+            enyo.windows.addBannerMessage($L("Uninstalled Module!"), enyo.json.stringify({}));
+            this.doGetModules();
+        }
+    },
+
+    handleInstalledModule: function (response) {
+        if (enyo.json.parse(response).returnValue) {
+            enyo.log("Installed Module!");
+            enyo.windows.addBannerMessage(enyo.json.parse(response).message, enyo.json.stringify({}));
+            this.setBtInstall();
+            this.doGetModules();
+        } else {
+            this.showError(enyo.json.parse(response).message);
+            this.$.modManView.stopSpinner();
+        }
+    },
+
+    handleGetModules: function (modules) {
+        biblez.modules = enyo.json.parse(modules);
+        this.doModulesChanged();
+    },
 
     showError: function (message) {
         this.$.errorDialog.setError(message);
@@ -377,11 +404,12 @@ enyo.kind({
         */
     },
 
-    setInstallProgress: function (total, completed) {
-        this.$.btInstall.setMaximum(total);
-        this.$.btInstall.setPosition(completed);
+    setInstallProgress: function (response) {
+        response = enyo.json.parse(response);
+        this.$.btInstall.setMaximum(parseInt(response.total, 10));
+        this.$.btInstall.setPosition(parseInt(response.completed, 10));
     },
-	
+
 	stopSpinner: function () {
 		this.$.spinner.hide();
 	}
