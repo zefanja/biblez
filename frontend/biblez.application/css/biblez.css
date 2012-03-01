@@ -23,6 +23,11 @@
 	margin: -4px;
 }
 
+/*STUFF */
+.biblez-stuff {
+    color: #333;
+}
+
 /* START */
 
 .start-label {
@@ -202,6 +207,8 @@ a {
 .verse-intro {
     padding: 0.5em 0em 0.5em 0em;
     font-style: italic;
+    border-bottom: 1px solid #333;
+    margin-bottom: 1em;
 }
 
 .module-item {

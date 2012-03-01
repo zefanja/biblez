@@ -1,3 +1,18 @@
+/*### BEGIN LICENSE
+# Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
+# by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
+# PURPOSE.  See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program.  If not, see <http://www.gnu.org/licenses/>.
+### END LICENSE*/
+
 enyo.kind({
     name: "App.MainView",
     kind: enyo.VFlexBox,
@@ -81,12 +96,17 @@ enyo.kind({
         passage: null,
         verses: [],
         view: "main",
-        sync: true
+        sync: true,
+        background: "default"
     },
 
     create: function () {
         this.inherited(arguments);
         this.doGetModules();
+        if (enyo.getCookie("background")) {
+            this.background = enyo.json.parse(enyo.getCookie("background"));
+            this.backgroundChanged();
+        }
         //enyo.keyboard.setResizesWindow(false);
     },
 
@@ -102,6 +122,27 @@ enyo.kind({
     /* getPassage: function () {
         return {"passage": this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter() + ":" + this.$.selector.getVerse()};
     },*/
+
+    //STYLE
+    backgroundChanged: function () {
+        this.addRemoveClass("scroller-background", false);
+        this.addRemoveClass("scroller-grayscale", false);
+        this.addRemoveClass("scroller-night", false);
+        switch (this.background) {
+            case "palm":
+                this.addClass("");
+            break;
+            case "default":
+                this.addClass("scroller-background");
+            break;
+            case "grayscale":
+                this.addClass("scroller-grayscale");
+            break;
+            case "night":
+                this.addClass("scroller-night");
+            break;
+        }
+    },
 
     //API Calls and Callbacks
 

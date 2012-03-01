@@ -11,7 +11,7 @@
 
     //if we're being launched from the Just Type system then pass in any parameters
     if (window.PalmSystem && enyo.windowParams){
-        //appInstance.setLaunchParams(enyo.windowParams);
+        appInstance.setLaunchParams(enyo.windowParams);
     }
     appInstance.renderInto(document.body);
     //new BibleZ.main().renderInto(document.body);

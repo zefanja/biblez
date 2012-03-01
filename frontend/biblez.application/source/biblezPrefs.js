@@ -41,12 +41,12 @@ enyo.kind({
         ]},
         {kind: "Scroller", flex: 1, components: [
             {kind: "RowGroup", caption: $L("General"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
-                /*{name: "generalSelector", kind: "ListSelector", label: $L("Background"), onChange: "itemChanged", items: [
-                    {caption: $L("Default"), value: "biblez"},
+                {name: "generalSelector", kind: "ListSelector", label: $L("Background"), onChange: "itemChanged", items: [
+                    {caption: $L("Default"), value: "default"},
 					{caption: $L("Paper Grayscale"), value: "grayscale"},
                     {caption: $L("Gray"), value: "palm"},
 					{caption: $L("Night View"), value: "night"}
-                ]}, */
+                ]},
                 /*{align: "center", components: [
                     {flex: 1, name: "scrolling", content: $L("Scrolling Method")},
                     {name: "toggleScroll", kind: "ToggleButton", onLabel: $L("Horizontal"), offLabel: $L("Vertical"), state: true, onChange: "changeScrolling"}
@@ -123,10 +123,18 @@ enyo.kind({
         } else {
             biblez.footnote = true;
         }
+
+        if (enyo.getCookie("background")) {
+            biblez.background = enyo.json.parse(enyo.getCookie("background"));
+            this.$.generalSelector.setValue(biblez.background);
+        } else {
+            biblez.background = "default";
+        }
     },
 
     itemChanged: function(inSender, inValue, inOldValue) {
-        this.background = inValue;
+        enyo.setCookie("background", enyo.json.stringify(inValue));
+        biblez.background = inValue;
         this.doBgChange();
     },
 
