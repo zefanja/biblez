@@ -25,7 +25,8 @@ enyo.kind({
             onGetRemoteModules: "handleGetRemoteModules",
             onInstalledModule: "handleInstalledModule",
             onProgress: "handleProgress",
-            onGetResults: "handleGetResults"
+            onGetResults: "handleGetResults",
+            onPluginError: "showError"
         },
         {kind: "AppMenu", components: [
             {caption: $L("Module Manager"), onclick: "openModuleMgr"},
@@ -38,7 +39,7 @@ enyo.kind({
         {name: "errorDialog", kind: "BibleZ.Error"},
         {name: "mainPane", flex: 1, kind: "Pane", transitionKind: "enyo.transitions.Simple", onSelectView: "viewSelected", components: [
             {name: "start", kind: "App.Start"},
-            {name: "welcome", kind: "App.Welcome"},
+            {name: "welcome", kind: "App.Welcome", onOpenModMan: "openModuleMgr"},
             {name: "verseView", kind: "HFlexBox",/* className: "scroller-background", */ components: [
                 {name: "mainView", kind: "App.MainView", flex: 1,
                     onGetModules: "handleGetModules",
@@ -153,7 +154,7 @@ enyo.kind({
         if (enyo.json.parse(response).returnValue)
             this.getRemoteModules();
         else
-            this.showError(enyo.json.parse(response).message);
+            this.showError(null, enyo.json.parse(response).message);
             this.$.modManView.stopSpinner();
     },
 
@@ -201,10 +202,14 @@ enyo.kind({
     //PANE STUFF
 
     goToMainView: function () {
-        this.$.mainPane.selectViewByName("verseView");
+        if (biblez.welcome)
+            this.$.mainPane.back();
+        else
+            this.$.mainPane.selectViewByName("verseView");
     },
 
     goToWelcome: function () {
+        biblez.welcome = true;
         this.$.mainPane.selectViewByName("welcome");
     },
 
@@ -342,7 +347,7 @@ enyo.kind({
         //enyo.setCookie("secondModule");
     },
 
-    showError: function (message) {
+    showError: function (inSender, message) {
         this.$.errorDialog.setError(message);
         this.$.errorDialog.openAtCenter();
     },

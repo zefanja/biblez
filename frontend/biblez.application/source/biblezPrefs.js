@@ -130,6 +130,16 @@ enyo.kind({
         } else {
             biblez.background = "default";
         }
+
+        if (enyo.getCookie("hebrewFont")) {
+            biblez.hebrewFont = enyo.json.parse(enyo.getCookie("hebrewFont"));
+            this.$.hebrewInput.setValue(biblez.hebrewFont.replace(/'/g, ""));
+        }
+
+        if (enyo.getCookie("greekFont")) {
+            biblez.greekFont = enyo.json.parse(enyo.getCookie("greekFont"));
+            this.$.greekInput.setValue(biblez.greekFont.replace(/'/g, ""));
+        }
     },
 
     itemChanged: function(inSender, inValue, inOldValue) {
@@ -192,12 +202,14 @@ enyo.kind({
 
     handleHebrewFont: function (inSender, inEvent) {
         //enyo.log(inSender.getValue());
-        enyo.application.hebrewFont = "'" + inSender.getValue() + "'";
+        biblez.hebrewFont = "'" + inSender.getValue() + "'";
+        enyo.setCookie("hebrewFont", enyo.json.stringify(biblez.hebrewFont));
     },
 
     handleGreekFont: function (inSender, inEvent) {
         //enyo.log(inSender.getValue());
-        enyo.application.greekFont = "'" + inSender.getValue() + "'";
+        biblez.greekFont = "'" + inSender.getValue() + "'";
+        enyo.setCookie("greekFont", enyo.json.stringify(biblez.greekFont));
     },
 
     setCustomFonts: function (hebrew, greek) {

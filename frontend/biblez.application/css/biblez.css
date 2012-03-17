@@ -33,6 +33,8 @@
 .start-label {
     font-weight: bold;
     font-size: 26px;
+    padding: 20px;
+    text-align: center;
 }
 
 /* MAIN VIEW */
@@ -511,6 +513,16 @@ a {
     padding-right: 8px;
 }
 
+.font-prefs {
+    padding-left: 8px;
+}
+
+.font-divider {
+    padding-right: 8px;
+    margin-left: -15px;
+}
+
+
 .color-button {
     height: 20px;
 }
@@ -521,6 +533,20 @@ a {
     text-transform: uppercase;
 }
 
+.popup-input {
+    color: rgb(31, 117,191);
+}
+
+.fadedOut {
+    opacity: 0;
+    -webkit-transition-property: opacity;
+    -webkit-transition-duration: 1s;
+}
+
+.fadeIn {
+    opacity: 1;
+}
+
 /*PREFERENCES */
 .prefs-container {
     max-width: 500px;
@@ -528,7 +554,11 @@ a {
 
 /*NOTE VIEW */
 .nv-title {
+    padding-top: 5px;
     font-weight: bold;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .nv-passage {

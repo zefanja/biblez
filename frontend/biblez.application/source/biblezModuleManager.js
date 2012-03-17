@@ -375,12 +375,13 @@ enyo.kind({
     handleInstalledModule: function (response) {
         if (enyo.json.parse(response).returnValue) {
             enyo.log("Installed Module!");
+            biblez.welcome = false;
             enyo.windows.addBannerMessage(enyo.json.parse(response).message, enyo.json.stringify({}));
             this.setBtInstall();
             this.doGetModules();
         } else {
             this.showError(enyo.json.parse(response).message);
-            this.$.modManView.stopSpinner();
+            //this.$.modManView.stopSpinner();
         }
     },
 

@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -34,24 +34,24 @@ enyo.kind({
         {kind: "ApplicationEvents", onWindowRotated: "windowRotated"},
 		{name: "leftSnapper", kind: "SnapScroller", flex: 1, className: "splitview-left", onSnap: "doLeftSnap", autoVertical: false, vertical: false, components: [
 	        {className: "selector-scroller", components: [
-                {name: "prevChapterLeft", content: "Previous Chapter", className: "chapter-nav-left chapter-nav"}	
+                {name: "prevChapterLeft", content: "Previous Chapter", className: "chapter-nav-left chapter-nav"}
 	        ]},
 	        {name: "leftScroller", kind: "Scroller", className: "selector-scroller", components: [
                 {name: "leftView", kind: "HtmlContent", allowHtml: true, content: "middle", className: "splitview-verse", onLinkClick: "handleVerseTap"}
 	        ]},
 	        {className: "selector-scroller", components: [
-                {name: "nextChapterLeft", content: "Next Chapter", className: "chapter-nav-right chapter-nav"}	
+                {name: "nextChapterLeft", content: "Next Chapter", className: "chapter-nav-right chapter-nav"}
 	        ]}
 		]},
 		{name: "rightSnapper", kind: "SnapScroller", flex: 1, onSnap: "", className: "splitview-right", autoVertical: false, vertical: false, components: [
 			{name: "leftleft", className: "selector-scroller", components: [
-                {name: "prevChapterRight", content: "Previous Chapter", className: "chapter-nav-left chapter-nav"}   
+                {name: "prevChapterRight", content: "Previous Chapter", className: "chapter-nav-left chapter-nav"}
             ]},
             {name: "rightScroller", kind: "Scroller", className: "selector-scroller", components: [
                 {name: "rightView", kind: "HtmlContent", allowHtml: true, content: "middle", className: "splitview-verse"}
             ]},
             {name: "leftright", className: "selector-scroller", components: [
-                {name: "nextChapterRight", content: "Next Chapter", className: "chapter-nav-right chapter-nav"}  
+                {name: "nextChapterRight", content: "Next Chapter", className: "chapter-nav-right chapter-nav"}
             ]}
 		]}
 	],
@@ -87,7 +87,7 @@ enyo.kind({
             this.popupLeft = enyo.byId("footnoteLeft" + this.tappedVerse).getBoundingClientRect().left;
             this.doShowFootnote();
         }
-        
+
         //this.$.versePopup.openAt({top: top, left: left});
     },
 
@@ -107,7 +107,7 @@ enyo.kind({
         this.$.leftView.addStyles("font-family: " + font + ";");
         this.$.rightView.addStyles("font-family: " + font + ";");
     },
-    
+
     setVersesLeft: function (verses, vnumber) {
         this.$.leftSnapper.setIndex(1);
         this.$.leftScroller.setScrollTop(0);
@@ -130,14 +130,14 @@ enyo.kind({
             enyo.byId("noteIconLeft"+notes[i].vnumber).innerHTML = "<a href='note://" + i + ":" + notes[i].vnumber + "'><img id='noteLeft" + i + "' src='images/note.png' /></a>";
         }
     },
-    
+
     setBookmarks: function(bookmarks) {
         enyo.application.bookmarks = bookmarks;
         for (var i=0;i<bookmarks.length; i++) {
             enyo.byId("bmIconLeft"+bookmarks[i].vnumber).innerHTML = "<a href='bookmark://" + i + ":" + bookmarks[i].vnumber + "'><img id='bookmarkLeft" + i + "' src='images/bookmark.png' /></a>";
         }
     },
-    
+
     setHighlights: function(highlights) {
         enyo.application.highlights = highlights;
         for (var i=0;i<highlights.length; i++) {
@@ -158,7 +158,7 @@ enyo.kind({
     setPrevChapterLeft: function (passage) {
         this.$.prevChapterLeft.setContent("< " + passage);
     },
-    
+
     setNextChapterLeft: function (passage) {
         this.$.nextChapterLeft.setContent(passage + " >");
     },
@@ -166,13 +166,13 @@ enyo.kind({
     setPrevChapterRight: function (passage) {
         this.$.prevChapterRight.setContent("< " + passage);
     },
-    
+
     setNextChapterRight: function (passage) {
         this.$.nextChapterRight.setContent(passage + " >");
     },
 
     getIndexLeft: function () {
-       return this.$.leftSnapper.getIndex(); 
+       return this.$.leftSnapper.getIndex();
     },
 
     windowRotated: function(inSender) {
@@ -184,7 +184,7 @@ enyo.kind({
         this.$.leftScroller.addStyles("width: " + width + "px;");
         this.$.rightScroller.addStyles("height: " + height + "px;");
         this.$.rightScroller.addStyles("width: " + width + "px;");
-        
+
         this.$.leftSnapper.setIndex(this.$.leftSnapper.index);
         this.$.rightSnapper.setIndex(this.$.rightSnapper.index);
 

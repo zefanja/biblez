@@ -30,7 +30,7 @@ enyo.kind({
             onHighlight: "handleHighlight",
             onRelease: "handleMouseRelease"
         },
-        {name: "fontMenu", kind: "BibleZ.FontMenu", onFontSize: "changeFontSize", onFont: "changeFont"},
+        {name: "fontMenu", kind: "BibleZ.FontMenu", onFontSize: "changeFontSize", onFont: "changeFont", onSync: "changeSync", onScrolling: "changeScrolling"},
         {name: "historyMenu", kind: "Menu", lazy: false},
         {name: "library", kind: "App.Library", onSelectModule: "handleSelectModules"},
         {name: "selector", kind: "App.Selector", onChapter: "getVMax", onVerse: "handleOnVerse"},
@@ -45,13 +45,13 @@ enyo.kind({
         {name: "headerMain", kind: "Header", className: "view-header", components: [
             {name: "verseBox", kind: "HFlexBox", flex: 1, components: [
                 {kind: "Button", name: "btModule", caption: "Module", onclick: "openLibrary", className: "header-button"},
-                {kind: "Button", name: "btGo", caption: "Go to", onclick: "openSelector", className: "header-button"},
+                {kind: "IconButton", name: "btGo", icon: "images/book.png", onclick: "openSelector", className: "header-button"},
                 {kind: "Button", name: "btBack", showing: false, caption: $L("Back"), onclick: "goBack", className: "header-button"},
                 {name: "btHistory", kind: "IconButton", icon: "images/history.png", onclick: "openHistoryMenu", className: "header-button"}
             ]},
             {name: "passageBox", kind: "HFlexBox", flex: 1, components: [
                 //{kind: "Spacer"},
-                {name: "passageLabel", content: "This is a test label", className: "passage-label", flex: 1}
+                {name: "passageLabel", content: "", className: "passage-label", flex: 1}
                 //{kind: "Spacer"}
             ]},
             {name: "personalBox", kind: "HFlexBox", flex: 1, components: [
@@ -75,7 +75,7 @@ enyo.kind({
                 onNewBm: "getBookmarks",
                 onNewNote: "getNotes",
                 onPaneBack: "handleStuffBack",
-                onCancel: "handleStuffBack",
+                onCancel: "goBack",
                 onSearch: "handleSearch"
             }
         ]}
@@ -114,9 +114,12 @@ enyo.kind({
         this.inherited(arguments);
         if (this.view === "split") {
             this.$.btHistory.hide();
+        } else {
+            this.$.fontMenu.hideSync();
         }
 
         this.$.verseView.setView(this.view);
+
     },
 
     /* getPassage: function () {
@@ -374,6 +377,14 @@ enyo.kind({
         //this.$.splitContainer.setFont(this.currentFont);
     },
 
+    changeSync: function (inSender, inSync) {
+        this.sync = inSync;
+    },
+
+    changeScrolling: function (inSender, inScrolling) {
+        this.$.verseView.changeScrolling(inScrolling);
+    },
+
     openHistoryMenu: function (inSender, inEvent) {
         this.$.historyMenu.openAtEvent(inEvent);
     },
@@ -450,9 +461,19 @@ enyo.kind({
         this.$.versePopup.close();
         var verseNumber = /*(this.$.mainViewPane.getViewName() == "splitContainer") ? this.$.splitContainer.tappedVerse : */this.$.verseView.tappedVerse;
         var bmID = (this.$.verseView.getView() == "split") ? "bmIconSplit" : "bmIcon";
+        var id = null;
         if (enyo.byId(bmID+verseNumber).innerHTML !== "") {
-            api.removeBookmark(this.$.selector.getBnumber(), this.$.selector.getChapter(), verseNumber, enyo.bind(this, this.getBookmarks));
-            enyo.byId(bmID+verseNumber).innerHTML = "";
+            var data = (this.$.verseView.getView() == "split") ? biblez.splitBookmarks : biblez.mainBookmarks;
+            enyo.log(enyo.json.stringify(data));
+            for (var i=0; i<data.length; i++) {
+                if (data[i].vnumber === verseNumber) {
+                    id = data[i].id;
+                }
+            }
+            enyo.log("ID:", id);
+            if (id !== null)
+                api.removeBookmark(id, enyo.bind(this, this.getBookmarks));
+            enyo.byId(bmID+enyo.json.stringify(verseNumber)).innerHTML = "";
         } else {
             api.addBookmark(this.$.selector.getBnumber(), this.$.selector.getChapter(), verseNumber, "", "", "", enyo.bind(this, this.getBookmarks));
         }
@@ -550,9 +571,18 @@ enyo.kind({
         var verseNumber = this.$.verseView.tappedVerse;
         var passage = {"bnumber" : this.$.selector.getBnumber(), "cnumber": this.$.selector.getChapter(), "vnumber" : verseNumber};
         var noteID = (this.$.verseView.getView() === "split") ? "noteIconSplit" : "noteIcon";
+        var id = null;
         if (enyo.byId(noteID+verseNumber).innerHTML !== "") {
-            api.removeNote(this.$.selector.getBnumber(), this.$.selector.getChapter(), verseNumber, enyo.bind(this, this.getNotes));
-            enyo.byId(noteID+verseNumber).innerHTML = "";
+            var data = (this.$.verseView.getView() == "split") ? biblez.splitNotes : biblez.mainNotes;
+            for (var i=0; i<data.length; i++) {
+                if (data[i].vnumber === verseNumber) {
+                    id = data[i].id;
+                }
+            }
+            enyo.log("ID:", id);
+            if (id !== null)
+                api.removeNote(id, enyo.bind(this, this.getNotes));
+            enyo.byId(noteID+enyo.json.stringify(verseNumber)).innerHTML = "";
         } else {
             this.$.stuff.openEdit({name: "itemNote"}, null, passage, {top: 0, left: this.$.verseView.popupLeft});
             //this.$.noteBmSidebar.openEditPopup({name: "itemNote"}, null, passage);
@@ -618,7 +648,7 @@ enyo.kind({
         //enyo.log(this.$.btModule.hasNode().clientWidth + this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + 20, ":", this.$.headerMain.hasNode().clientWidth/3);
         if (this.$.btModule.hasNode().clientWidth + this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + 20 > this.$.headerMain.hasNode().clientWidth/3-20 || this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth + 20 > this.$.headerMain.hasNode().clientWidth/3-20)
             this.$.passageBox.hide();
-        else
+        else if (this.$.pane.getViewName() !== "stuffView")
             this.$.passageBox.show();
     },
 

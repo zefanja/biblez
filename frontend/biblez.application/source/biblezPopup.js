@@ -363,7 +363,9 @@ enyo.kind({
     lazy: false,
     events: {
       onFontSize: "",
-      onFont: ""
+      onFont: "",
+      onSync: "",
+      onScrolling: ""
     },
     published: {
 		fontSize: 20,
@@ -372,11 +374,9 @@ enyo.kind({
     components:[
         {kind: "VFlexBox", components: [
             {kind: "HFlexBox", components: [
-                //{content: $L("Font Size"), flex: 1, className: "font-menu"},
                 {name: "fontSlider", kind: "Slider", flex: 1, minimum: 12, maximum: 30, snap: 1, onChanging: "sliderChanging", onChange: "sliderChange", className: "font-slider"}
             ]},
             {kind: "HFlexBox", components: [
-                //{content: $L("Font"), flex: 1, className: "font-menu"},
                 {name: "fontSelector", kind: "ListSelector", flex: 1, value: "Prelude", onChange: "fontChanged", className: "font-slider", items: [
                     {caption: "Prelude", value: "Prelude"},
                     {caption: "Verdana", value: "Verdana"},
@@ -387,9 +387,35 @@ enyo.kind({
                     {caption: $L("Hebrew"), value: "hebrew"}
 
                 ]}
+            ]},
+            {name: "prefs", className: "font-prefs", components: [
+                {kind: "Divider", caption: "", className: "font-divider"},
+                {kind: "HFlexBox", align: "center", components: [
+                    {flex: 1, content: $L("Scrolling")},
+                    {name: "toggleScroll", kind: "ToggleButton", onLabel: $L("Horizontal"), offLabel: $L("Vertical"), state: true, onChange: "changeScrolling"}
+                ]},
+                {name: "syncPref", kind: "HFlexBox", align: "center", components: [
+                    {flex: 1, content: $L("Sync")},
+                    {name: "toggleSync", kind: "ToggleButton", state: true, onChange: "changeSync"}
+                ]}
             ]}
+
         ]}
     ],
+
+    rendered: function () {
+        this.inherited(arguments);
+        if (enyo.getCookie("syncSplitView")) {
+            var state = enyo.json.parse(enyo.getCookie("syncSplitView"));
+            this.doSync(state);
+            this.$.toggleSync.setState(state);
+        }
+
+        if (enyo.getCookie("scrolling")) {
+            this.$.toggleScroll.setState(enyo.json.parse(enyo.getCookie("scrolling")));
+        }
+
+    },
 
     sliderChange: function (inSender, inEvent) {
         //enyo.log(inSender.position);
@@ -422,6 +448,20 @@ enyo.kind({
     fontChanged: function(inSender, inValue, inOldValue) {
         this.font = inValue;
         this.doFont();
+    },
+
+    hideSync: function () {
+        this.$.syncPref.hide();
+    },
+
+    changeSync: function (inSender, inState) {
+        this.doSync(inState);
+        enyo.setCookie("syncSplitView", enyo.json.stringify(inState));
+    },
+
+    changeScrolling: function (inSender, inState) {
+        this.doScrolling(inState);
+        enyo.setCookie("scrolling", enyo.json.stringify(inState));
     }
 });
 

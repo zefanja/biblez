@@ -318,7 +318,7 @@ enyo.kind({
         var r = this.modules[inIndex];
         if (r) {
             //console.log(r + " - " + this.tmpLang);
-            this.$.moduleDescr.setContent(r.descr);
+            this.$.moduleDescr.setContent(r.descr + "(" + r.modType + ")");
             this.$.moduleName.setContent(r.name);
 
             var isRowSelected = (this.currentModule && r.name == this.currentModule.name) ? true : false;

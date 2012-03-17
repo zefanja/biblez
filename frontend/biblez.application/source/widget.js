@@ -44,8 +44,12 @@ enyo.kind({
     pack: "center",
     align: "center",
     className: "scroller-background",
+    events: {
+        onOpenModMan: ""
+    },
     components: [
-        {content: $L("Thank you for installing BibleZ Pro HD. Currently there are no modules installed. Please open the Module Manager and add at least one module!"), className: "start-label"}
+        {content: $L("Thank you for installing BibleZ Pro HD. Currently there are no modules installed. Please open the Module Manager and add at least one module!"), className: "start-label"},
+        {kind: "Button", caption: $L("Open Module Manager"), onclick: "doOpenModMan"}
     ]
 });
 
@@ -62,7 +66,8 @@ enyo.kind({
         folder: "",
         tags: "",
         note: "",
-        editType: "note"
+        editType: "note",
+        mode: "popup"
     },
     components: [
         {name: "folderMenu", kind: "Menu", lazy: false},
@@ -90,6 +95,18 @@ enyo.kind({
     ],
 
     noteHeight: 0,
+
+    viewChanged: function (inSender) {
+        enyo.log(inSender);
+    },
+
+    changeColors: function () {
+        if (this.mode === "split") {
+            this.$.titleInput.setInputClassName("popup-input");
+            this.$.folderInput.setInputClassName("popup-input");
+            this.$.tagsInput.setInputClassName("popup-input");
+        }
+    },
 
     editTypeChanged: function (inSender, inEvent) {
         if (this.editType == "bookmark") {

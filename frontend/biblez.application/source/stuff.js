@@ -97,6 +97,18 @@ enyo.kind({
             this.goBack();
     },
 
+    autoHideHandler: function() {
+        if (this.getCurrentView() === "editView") {
+            if (this.autoClose) {
+                this.close(null, "popup:autoclose");
+            }
+            this.broadcastToControls("autoHide");
+        } else {
+            this.close();
+        }
+
+    },
+
     resizeHandler: function () {
         this.inherited(arguments);
         //enyo.log("resized StuffPopup");
@@ -121,7 +133,7 @@ enyo.kind({
             {title: $L("Bookmarks"), view: "bookmarksView", icon: "images/bookmarks.png"},
             {title: $L("Notes"), view: "notesView", icon: "images/notes.png"},
             {title: $L("Highlights"), view: "highlightsView", icon: "images/highlights.png"},
-            //{title: $L("Add Note"), view: "editView", icon: ""}
+            {title: $L("Add Note"), view: "addNewNote", icon: "images/new.png"},
             {title: $L("Search"), view: "searchView", icon: "images/searchList.png"}
         ],
         bookmarks: [],
@@ -133,6 +145,8 @@ enyo.kind({
         editMode: null,
         currentBookmark: null,
         currentNote: null,
+        noteIndex: 0,
+        tappedEdit: false,
         searchScope: "Mat-Rev",
         searchTerm: "",
         searchType: -2,
@@ -205,7 +219,7 @@ enyo.kind({
                                             {name: "noteTags", flex: 1, className: "sidebar-tags", allowHtml: true}
                                         ]}
                                     ],
-                                    onclick: "showNote",
+                                    onclick: "goToNote",
                                     onmousehold: "openEdit",
                                     onmouseout: "setEditFocus"
                                     }]
@@ -269,17 +283,18 @@ enyo.kind({
                 {name: "tagsView"},
 
                 //ADD NOTE
-                {name: "editView", kind: "App.AddNote", onEditData: "updateData", onCancel: "doCancel"},
+                {name: "editView", kind: "App.AddNote", view: "split", onEditData: "updateData", onCancel: "doCancel"},
 
                 //NOTE VIEW
                 {name: "noteView", components: [
                     {kind: "VFlexBox", className: "popup-scroller-container", height: "100%", components: [
                         {kind: "Scroller", flex: 1, components: [
                             {kind: "HFlexBox", align: "center", components: [
-                                {name: "nvTitle", className: "nv-title"},
+                                {name: "btEdit", kind: "IconButton", icon: "images/edit.png", onclick: "editNote"},
                                 {kind: "Spacer"},
                                 {name: "btPassage", kind: "Button", onclick: "goToVerse"}
                             ]},
+                            {name: "nvTitle", className: "nv-title"},
                             {name: "nvNote", allowHtml: true, flex: 1, className: "nv-note"},
                             {kind: "HFlexBox", style: "border-top: 1px solid #D3D3D3;", components: [
                                 {name: "nvFolder", flex: 1, className: "sidebar-folder", allowHtml: true},
@@ -292,15 +307,23 @@ enyo.kind({
         ]}
     ],
 
+    viewChanged: function (inSender) {
+        enyo.log(inSender);
+    },
+
     rendered: function () {
         this.inherited(arguments);
+        //enyo.log("VIEW: ",  this.view);
         if (this.view === "split") {
             this.$.stuffHeader.hide();
             this.addStyles("background-color: rgba(0,0,0,0.8);");
             this.$.searchType.addStyles("color: #F5F5F5;");
+            this.$.editView.setMode(this.view);
+            this.$.editView.changeColors();
         } else {
             this.addStyles("background-color: none;");
             this.$.searchType.addStyles("color: #333;");
+            this.$.editView.setMode(this.view);
         }
     },
 
@@ -329,6 +352,9 @@ enyo.kind({
             case "editView":
                 //this.$.headerTitle.setContent($L("Add Note"));
                 api.getFolders(enyo.bind(this.$.editView, this.$.editView.handleFolders));
+            break;
+            case "noteView":
+                this.showNote();
             break;
         }
 
@@ -367,7 +393,11 @@ enyo.kind({
     },
 
     goToView: function (inSender, inEvent, rowIndex) {
-        this.$.stuffPane.selectViewByName(this.stuff[rowIndex].view);
+        if (this.stuff[rowIndex].view === "addNewNote")
+            this.openEdit({name: "itemNote"});
+        else
+            this.$.stuffPane.selectViewByName(this.stuff[rowIndex].view);
+
     },
 
     //BOOKMARKS VIEW
@@ -415,7 +445,7 @@ enyo.kind({
 
     deleteBookmark: function (inSender, inIndex) {
         this.verse = this.bookmarks[inIndex].vnumber;
-        api.removeBookmark(this.bookmarks[inIndex].bnumber, this.bookmarks[inIndex].cnumber, this.bookmarks[inIndex].vnumber, enyo.bind(this, this.handleDelete, "bookmarks", $L("Bookmark")));
+        api.removeBookmark(this.bookmarks[inIndex].id, enyo.bind(this, this.handleDelete, "bookmarks", $L("Bookmark")));
     },
 
     filterBookmarks: function (inSender, inEvent) {
@@ -444,6 +474,8 @@ enyo.kind({
         }
         this.$.noteList.render();
         this.$.scrollerNote.scrollTo(0,0);
+        if (this.tappedEdit)
+            this.showNote();
     },
 
     filterNotes: function (inSender, inEvent) {
@@ -454,13 +486,16 @@ enyo.kind({
         var r = this.notes[inIndex];
         if (r) {
             this.$.noteText.setContent(r.note.replace(/"/g,""));
-            if (biblez.bookNames[parseInt(r.bnumber, 10)]) {
+            if (biblez.bookNames[parseInt(r.bnumber, 10)] && parseInt(r.cnumber, 10) !== 0 && parseInt(r.vnumber, 10) !== 0) {
                 if (r.title !== "") {
                     this.$.notePassage.setContent("<b>" + r.title + "</b>" + " <i>(" + biblez.bookNames[parseInt(r.bnumber, 10)].abbrev + " " + r.cnumber + ":" + r.vnumber + ")</i>");
                 } else {
                     this.$.notePassage.setContent("<i>" + biblez.bookNames[parseInt(r.bnumber, 10)].abbrev + " " + r.cnumber + ":" + r.vnumber + "</i>");
                 }
-
+            } else {
+                if (r.title !== "") {
+                    this.$.notePassage.setContent("<b>" + r.title + "</b>");
+                }
             }
 
             if (r.folder !== "") {this.$.noteFolder.setContent("<img src='images/folder_brown.png' class='sidebar-icon'/> " + r.folder);}
@@ -476,21 +511,31 @@ enyo.kind({
 
     deleteNote: function (inSender, inIndex) {
         this.verse = this.notes[inIndex].vnumber;
-        api.removeNote(this.notes[inIndex].bnumber, this.notes[inIndex].cnumber, this.notes[inIndex].vnumber, enyo.bind(this, this.handleDelete, "notes", $L("Note")));
+        api.removeNote(this.notes[inIndex].id, enyo.bind(this, this.handleDelete, "notes", $L("Note")));
+    },
+
+    goToNote: function (inSender, inEvent, rowIndex) {
+        this.tappedEdit = true;
+        this.noteIndex = rowIndex;
+        this.$.stuffPane.selectViewByName("noteView");
     },
 
     showNote: function (inSender, inEvent, rowIndex) {
-        this.currentNote = this.notes[rowIndex];
-        var passage = biblez.bookNames[parseInt(this.currentNote.bnumber, 10)].abbrev + " " + this.currentNote.cnumber + ":" + this.currentNote.vnumber;
+        this.currentNote = (rowIndex) ? this.notes[rowIndex] : this.notes[this.noteIndex];
+        if (parseInt(this.currentNote.cnumber, 10) !== 0 && parseInt(this.currentNote.vnumber, 10) !== 0) {
+            var passage = biblez.bookNames[parseInt(this.currentNote.bnumber, 10)].abbrev + " " + this.currentNote.cnumber + ":" + this.currentNote.vnumber;
+            this.$.btPassage.setCaption(passage);
+            this.$.btPassage.show();
+        } else {
+            this.$.btPassage.hide();
+        }
         //enyo.log(note);
         this.$.nvTitle.setContent(this.currentNote.title);
-        this.$.btPassage.setCaption(passage);
+
         this.$.nvNote.setContent(this.currentNote.note);
 
         this.$.nvFolder.setContent((this.currentNote.folder !== "") ? "<img src='images/folder_brown.png' class='sidebar-icon'/> " + this.currentNote.folder : "");
         this.$.nvTags.setContent((this.currentNote.tags !== "") ? "<img src='images/tags.png' class='sidebar-icon'/> " + this.currentNote.tags: "");
-
-        this.$.stuffPane.selectViewByName("noteView");
     },
 
     //HIGHLIGHTS VIEW
@@ -532,7 +577,7 @@ enyo.kind({
 
     deleteHighlight: function (inSender, inIndex) {
         this.verse = this.highlights[inIndex].vnumber;
-        api.removeHighlight(this.highlights[inIndex].bnumber, this.highlights[inIndex].cnumber, this.highlights[inIndex].vnumber, enyo.bind(this, this.handleDelete, "highlights", $L("Highlight")));
+        api.removeHighlight(this.highlights[inIndex].id, enyo.bind(this, this.handleDelete, "highlights", $L("Highlight")));
     },
 
     //SEARCH VIEW
@@ -607,9 +652,19 @@ enyo.kind({
 
     //ADD & EDIT POPUP
 
+    editNote: function (inSender, inEvent) {
+        this.$.editView.setEditType("note");
+        this.setEditMode("edit");
+        this.$.editView.setBtCaption($L("Edit"));
+        this.$.editView.setData(this.currentNote.title, this.currentNote.folder, this.currentNote.tags, this.currentNote.note);
+        this.$.editView.setNoteFocus();
+        this.$.stuffPane.selectViewByName("editView");
+    },
+
     openEdit: function (inSender, inEvent, passage, position) {
         //enyo.log("Open Edit Menu...", passage, inEvent.rowIndex);
         var r = null;
+        this.tappedEdit = false;
         if (inSender.name == "itemBm") {
             this.$.editView.setEditType("bookmark");
             if (inEvent) {
@@ -634,6 +689,7 @@ enyo.kind({
         } else if (inSender.name == "itemNote") {
             this.$.editView.setEditType("note");
             if (inEvent) {
+                this.noteIndex = inEvent.rowIndex;
                 r = this.notes[inEvent.rowIndex];
                 this.currentNote = r;
                 this.setEditMode("edit");
@@ -643,6 +699,7 @@ enyo.kind({
                 for (var j=0;j<this.notes.length;j++) {
                     if(parseInt(r.bnumber, 10) == parseInt(this.notes[j].bnumber, 10) && parseInt(r.cnumber, 10) == parseInt(this.notes[j].cnumber, 10) && parseInt(r.vnumber, 10) == parseInt(this.notes[j].vnumber, 10)) {
                         r = this.notes[j];
+                        this.noteIndex = j;
                     }
                 }
                 this.currentNote = r;
@@ -654,10 +711,20 @@ enyo.kind({
                     this.$.editView.setBtCaption($L("Add"));
                 }
 
+            } else {
+                this.setEditMode("add");
+                this.$.editView.setBtCaption($L("Add"));
+                this.$.headerTitle.setContent($L("Add Note"));
+                this.currentNote = {bnumber: 0, cnumber: 0, vnumber: 0};
             }
+
             this.$.stuffPane.selectViewByName("editView");
-            this.$.headerTitle.setContent((inSender.mode) ? $L("Edit") + " - " + biblez.bookNames[parseInt(r.bnumber, 10)].abbrev + " " + r.cnumber + ":" + r.vnumber : $L("Add Note") + " - " + biblez.bookNames[parseInt(r.bnumber, 10)].abbrev + " " + r.cnumber + ":" + r.vnumber);
-            this.$.editView.setData(r.title, r.folder, r.tags, r.note);
+            if (r) {
+                this.$.editView.setData(r.title, r.folder, r.tags, r.note);
+                this.$.headerTitle.setContent((inSender.mode) ? $L("Edit") + " - " + biblez.bookNames[parseInt(r.bnumber, 10)].abbrev + " " + r.cnumber + ":" + r.vnumber : $L("Add Note") + " - " + biblez.bookNames[parseInt(r.bnumber, 10)].abbrev + " " + r.cnumber + ":" + r.vnumber);
+            } else {
+                this.$.editView.setData("","","","");
+            }
             this.$.editView.setNoteFocus();
             //this.openAt(position, true);
         }
@@ -668,14 +735,16 @@ enyo.kind({
         var tmp = inSender.getData();
         //enyo.log(tmp);
         if (inSender.editType == "bookmark") {
+            enyo.log("ID:", this.currentBookmark.id);
             if (this.editMode == "edit") {
-                api.updateBookmark(this.currentBookmark.bnumber, this.currentBookmark.cnumber, this.currentBookmark.vnumber, tmp.title, tmp.folder, tmp.tags, enyo.bind(this, this.handleUpdateBookmark, $L("Updated")));
+                api.updateBookmark(this.currentBookmark.id, tmp.title, tmp.folder, tmp.tags, enyo.bind(this, this.handleUpdateBookmark, $L("Updated")));
             } else {
                 api.addBookmark(this.currentBookmark.bnumber, this.currentBookmark.cnumber, this.currentBookmark.vnumber, tmp.title, tmp.folder, tmp.tags, enyo.bind(this, this.handleUpdateBookmark, $L("Added")));
             }
         } else if (inSender.editType == "note") {
+            enyo.log("ID:", this.currentNote.id);
             if (this.editMode == "edit") {
-                api.updateNote(this.currentNote.bnumber, this.currentNote.cnumber, this.currentNote.vnumber, tmp.note, tmp.title, tmp.folder, tmp.tags, enyo.bind(this, this.handleUpdateBookmark, $L("Updated")));
+                api.updateNote(this.currentNote.id, tmp.note, tmp.title, tmp.folder, tmp.tags, enyo.bind(this, this.handleUpdateBookmark, $L("Updated")));
             } else {
                 api.addNote(this.currentNote.bnumber, this.currentNote.cnumber, this.currentNote.vnumber, tmp.note, tmp.title, tmp.folder, tmp.tags, enyo.bind(this, this.handleUpdateBookmark, $L("Added")));
             }
@@ -694,6 +763,7 @@ enyo.kind({
             enyo.windows.addBannerMessage(inAction + " " + $L("Note"), enyo.json.stringify({}));
             this.getNotes();
             this.doNewNote();
+            enyo.log(this.tappedEdit);
         }
         api.getFolders(enyo.bind(this.$.editView, this.$.editView.handleFolders));
     },

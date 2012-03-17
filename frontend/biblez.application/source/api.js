@@ -30,7 +30,8 @@ enyo.kind({
         onGetRemoteModules: "",
         onInstalledModule: "",
         onProgress: "",
-        onGetResults: ""
+        onGetResults: "",
+        onPluginError: ""
     },
     published: {
         pluginReady: false
@@ -262,6 +263,7 @@ enyo.kind({
 
     showError: function (message) {
         enyo.error(message);
+        this.doPluginError(message);
     }
 });
 
@@ -294,9 +296,9 @@ var api = {
 
     dbCreateTables: function(oldVersion, newVersion) {
         try {
-            var sqlNote = "CREATE TABLE IF NOT EXISTS notes (bnumber INTEGER, cnumber INTEGER, vnumber INTEGER, note TEXT, title TEXT, folder TEXT, tags TEXT);";
-            var sqlBook = "CREATE TABLE IF NOT EXISTS bookmarks (bnumber INTEGER, cnumber INTEGER, vnumber INTEGER, title TEXT, folder TEXT, tags TEXT);";
-            var sqlHighlight = "CREATE TABLE IF NOT EXISTS highlights (bnumber INTEGER, cnumber INTEGER, vnumber INTEGER, color TEXT, description TEXT);";
+            var sqlNote = "CREATE TABLE IF NOT EXISTS notes (id INTEGER PRIMARY KEY AUTOINCREMENT, bnumber INTEGER, cnumber INTEGER, vnumber INTEGER, note TEXT, title TEXT, folder TEXT, tags TEXT);";
+            var sqlBook = "CREATE TABLE IF NOT EXISTS bookmarks (id INTEGER PRIMARY KEY AUTOINCREMENT, bnumber INTEGER, cnumber INTEGER, vnumber INTEGER, title TEXT, folder TEXT, tags TEXT);";
+            var sqlHighlight = "CREATE TABLE IF NOT EXISTS highlights (id INTEGER PRIMARY KEY AUTOINCREMENT, bnumber INTEGER, cnumber INTEGER, vnumber INTEGER, color TEXT, description TEXT);";
             this.db.changeVersion(oldVersion, newVersion,
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sqlNote, [],
@@ -420,7 +422,7 @@ var api = {
         var modules = [];
         try {
             //var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND modType = 'texts' ORDER BY modType, modName ASC;";
-            var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND (modType = 'texts' OR modType = 'comments') ORDER BY modType DESC, modName ASC;";
+            var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' ORDER BY modType DESC, modName ASC;"; //AND (modType = 'texts' OR modType = 'comments')
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sql, [],
@@ -457,10 +459,9 @@ var api = {
         }
     },
 
-    removeNote: function (bnumber, cnumber, vnumber, inCallback) {
-        enyo.log(bnumber, cnumber, vnumber);
+    removeNote: function (id, inCallback) {
         try {
-            var sql = "DELETE FROM notes WHERE bnumber = '" + bnumber + "' AND cnumber = '" + cnumber + "' AND vnumber = '" + vnumber + "'";
+            var sql = "DELETE FROM notes WHERE id = '" + id + "'";
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sql, [],
@@ -476,10 +477,9 @@ var api = {
         }
     },
 
-    updateNote: function (bnumber, cnumber, vnumber, noteText, title, folder, tags, inCallback) {
-        enyo.log(bnumber, cnumber, vnumber, noteText, title, folder, tags);
+    updateNote: function (id, noteText, title, folder, tags, inCallback) {
         try {
-            var sql = 'UPDATE notes SET note = "' + noteText.replace(/"/g,"") + '", title = "' + title + '", folder = "' + folder + '", tags = "' + tags + '" WHERE bnumber = "' + bnumber + '" AND cnumber = "' + cnumber + '" AND vnumber = "' + vnumber + '"';
+            var sql = 'UPDATE notes SET note = "' + noteText.replace(/"/g,"") + '", title = "' + title + '", folder = "' + folder + '", tags = "' + tags + '" WHERE id = "' + id + '"';
             enyo.log(sql);
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
@@ -510,10 +510,10 @@ var api = {
                         for (var j=0; j<results.rows.length; j++) {
                             if (searchTerm) {
                                 if (results.rows.item(j).note.toLowerCase().search(searchTerm) !== -1 || results.rows.item(j).title.toLowerCase().search(searchTerm) !== -1 || results.rows.item(j).folder.toLowerCase().search(searchTerm) !== -1 || results.rows.item(j).tags.toLowerCase().search(searchTerm) !== -1 || biblez.bookNames[parseInt(results.rows.item(j).bnumber, 10)].abbrev.toLowerCase().search(searchTerm) !== -1) {
-                                    notes.push({"bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "note": results.rows.item(j).note, "title": results.rows.item(j).title, "folder": results.rows.item(j).folder, "tags": results.rows.item(j).tags});
+                                    notes.push({"id": results.rows.item(j).id, "bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "note": results.rows.item(j).note, "title": results.rows.item(j).title, "folder": results.rows.item(j).folder, "tags": results.rows.item(j).tags});
                                 }
                             } else {
-                                notes.push({"bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "note": results.rows.item(j).note, "title": results.rows.item(j).title, "folder": results.rows.item(j).folder, "tags": results.rows.item(j).tags});
+                                notes.push({"id": results.rows.item(j).id, "bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "note": results.rows.item(j).note, "title": results.rows.item(j).title, "folder": results.rows.item(j).folder, "tags": results.rows.item(j).tags});
                             }
                         }
                         inCallback(notes);
@@ -545,10 +545,10 @@ var api = {
         }
     },
 
-    updateBookmark: function (bnumber, cnumber, vnumber, title, folder, tags, inCallback) {
-        enyo.log(bnumber, cnumber, vnumber, title, folder, tags);
+    updateBookmark: function (id, title, folder, tags, inCallback) {
+        //enyo.log(bnumber, cnumber, vnumber, title, folder, tags);
         try {
-            var sql = 'UPDATE bookmarks SET title = "' + title + '", folder = "' + folder + '", tags = "' + tags + '" WHERE bnumber = "' + bnumber + '" AND cnumber = "' + cnumber + '" AND vnumber = "' + vnumber + '"';
+            var sql = 'UPDATE bookmarks SET title = "' + title + '", folder = "' + folder + '", tags = "' + tags + '" WHERE id = "' + id + '"';
             enyo.log(sql);
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
@@ -565,10 +565,10 @@ var api = {
         }
     },
 
-    removeBookmark: function (bnumber, cnumber, vnumber, inCallback) {
+    removeBookmark: function (id, inCallback) {
         //enyo.log(bnumber, cnumber, vnumber);
         try {
-            var sql = "DELETE FROM bookmarks WHERE bnumber = '" + bnumber + "' AND cnumber = '" + cnumber + "' AND vnumber = '" + vnumber + "'";
+            var sql = "DELETE FROM bookmarks WHERE id = '" + id + "'";
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sql, [],
@@ -597,10 +597,10 @@ var api = {
                         for (var j=0; j<results.rows.length; j++) {
                             if (searchTerm) {
                                 if (results.rows.item(j).title.toLowerCase().search(searchTerm) !== -1 || results.rows.item(j).folder.toLowerCase().search(searchTerm) !== -1 || results.rows.item(j).tags.toLowerCase().search(searchTerm) !== -1 || biblez.bookNames[parseInt(results.rows.item(j).bnumber, 10)].abbrev.toLowerCase().search(searchTerm) !== -1) {
-                                    bm.push({"bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "title": results.rows.item(j).title, "folder": results.rows.item(j).folder, "tags": results.rows.item(j).tags});
+                                    bm.push({"id": results.rows.item(j).id, "bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "title": results.rows.item(j).title, "folder": results.rows.item(j).folder, "tags": results.rows.item(j).tags});
                                 }
                             } else {
-                                bm.push({"bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "title": results.rows.item(j).title, "folder": results.rows.item(j).folder, "tags": results.rows.item(j).tags});
+                                bm.push({"id": results.rows.item(j).id, "bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "title": results.rows.item(j).title, "folder": results.rows.item(j).folder, "tags": results.rows.item(j).tags});
                             }
                         }
                         inCallback(bm);
@@ -657,10 +657,9 @@ var api = {
         }
     },
 
-    removeHighlight: function (bnumber, cnumber, vnumber, inCallback) {
-        enyo.log(bnumber, cnumber, vnumber);
+    removeHighlight: function (id, inCallback) {
         try {
-            var sql = "DELETE FROM highlights WHERE bnumber = '" + bnumber + "' AND cnumber = '" + cnumber + "' AND vnumber = '" + vnumber + "'";
+            var sql = "DELETE FROM highlights WHERE id = '" + id + "'";
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sql, [],
@@ -676,9 +675,9 @@ var api = {
         }
     },
 
-    updateHighlight: function (bnumber, cnumber, vnumber, color, descr, inCallback) {
+    updateHighlight: function (id, color, descr, inCallback) {
         try {
-            var sql = 'UPDATE highlights SET color = "' + color + '" WHERE bnumber = "' + bnumber + '" AND cnumber = "' + cnumber + '" AND vnumber = "' + vnumber + '"';
+            var sql = 'UPDATE highlights SET color = "' + color + '" WHERE id = "' + id + '"';
             //enyo.log(sql);
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
@@ -707,7 +706,7 @@ var api = {
                     transaction.executeSql(sql, [],
                     enyo.bind(this, function (transaction, results) {
                         for (var j=0; j<results.rows.length; j++) {
-                            hl.push({"bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "color": results.rows.item(j).color, "descr": results.rows.item(j).description});
+                            hl.push({"id": results.rows.item(j).id, "bnumber": results.rows.item(j).bnumber, "cnumber": results.rows.item(j).cnumber, "vnumber": results.rows.item(j).vnumber, "color": results.rows.item(j).color, "descr": results.rows.item(j).description});
                         }
                         inCallback(hl);
                     }),

@@ -144,6 +144,7 @@ void refreshManagers() {
 	searchLibrary = new SWMgr();
     displayLibrary->setGlobalOption("Footnotes","On");
 	displayLibrary->setGlobalOption("Headings", "On");
+	//displayLibrary->setGlobalOption("Strong's Numbers", "On");
 }
 
 /*INSTALL MANAGER STUFF */
@@ -442,7 +443,8 @@ void listModules(SWMgr *otherMgr = 0, bool onlyNewAndUpdates = false) {
 				out << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
 			}
 			out << "\"datapath\": \"" << module->getConfigEntry("DataPath") << "\", ";
-			out << "\"description\": \"" << module->getConfigEntry("Description") << "\"}";
+			out << "\"description\": \"" << module->getConfigEntry("Description") << "\", ";
+			out << "\"modType\": \"" << module->Type() << "\"}";
 		}
 	}
 	out << "]";
@@ -654,6 +656,11 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	std::stringstream out;
 
 	SWModule *module = displayLibrary->getModule(moduleName);
+	if (!module || (strcmp(module->Type(), "Lexicons / Dictionaries") == 0 || strcmp(module->Type(), "Generic Books") == 0)) {
+		PDL_JSException(parms, "getVerses: Module isn't verse driven (no bible or commentary)");
+		return PDL_TRUE;
+	}
+
 	module->setKey(key);
 
 	VerseKey *vk = (VerseKey*)module->getKey();
