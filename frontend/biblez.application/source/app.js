@@ -38,8 +38,8 @@ enyo.kind({
         {name: "biblezAbout", kind: "BibleZ.About"},
         {name: "errorDialog", kind: "BibleZ.Error"},
         {name: "mainPane", flex: 1, kind: "Pane", transitionKind: "enyo.transitions.Simple", onSelectView: "viewSelected", components: [
-            {name: "start", kind: "App.Start"},
-            {name: "welcome", kind: "App.Welcome", onOpenModMan: "openModuleMgr"},
+            //{name: "start", kind: "App.Start"},
+            //{name: "welcome", kind: "App.Welcome", onOpenModMan: "openModuleMgr"},
             {name: "verseView", kind: "HFlexBox",/* className: "scroller-background", */ components: [
                 {name: "mainView", kind: "App.MainView", flex: 1,
                     onGetModules: "handleGetModules",
@@ -60,6 +60,7 @@ enyo.kind({
                         onWelcome: "goToWelcome",
                         onGetVMax: "handleGetVMax",
                         onSplitVerse: "handleSplitVerse",
+                        onSync: "handleSyncSplitView",
                         onSearch: "handleSearch"
                     }
                 ]}
@@ -78,9 +79,14 @@ enyo.kind({
                 onModulesChanged: "handleModulesChanged",
                 onBack: "goToMainView"
             },
-            {name: "prefs", kind: "BibleZ.Prefs", onBack: "goToMainView", onBgChange: "changeBackground", onLbChange: "changeLinebreak", onScrollChange: "changeScrolling"}
+            {name: "prefs", kind: "BibleZ.Prefs",
+                onBack: "goToMainView",
+                onBgChange: "changeBackground",
+                onLbChange: "changeLinebreak",
+                onScrollChange: "changeScrolling"
+            }
         ]},
-        {name: "btSplit", content: "", className: "split-button", showing: false, allowDrag: true,
+        {name: "btSplit", content: "", className: "split-button", showing: true, allowDrag: true,
             onclick: "openSecondViewClicked",
             ondragstart: "seperatorDragStart",
             ondrag: "seperatorDrag",
@@ -100,6 +106,7 @@ enyo.kind({
 
         enyo.keyboard.setResizesWindow(false);
         biblez.isOpen = false;
+        //biblez.scrollHorizontal = true;
 
         //LOAD PREFERENCES
         if (enyo.getCookie("mainModule"))
@@ -221,9 +228,12 @@ enyo.kind({
         } else if (inView.name == "verseView") {
             this.$.btSplit.show();
             if(biblez.modules.length !== 0) {
-                //enyo.log("Main selected....");
+                if (this.scrollingChanged) {
+                    this.$.mainView.changeScrolling(biblez.scrollHorizontal);
+                    this.$.splitView.changeScrolling(biblez.scrollHorizontal);
+                    this.scrollingChanged = false;
+                }
                 this.$.mainView.getVerses();
-                //this.$.splitView.getVerses();
             }
         }
     },
@@ -246,7 +256,7 @@ enyo.kind({
                 var right = (this.splitWidth === 0) ? window.innerWidth/2-31 : this.splitWidth;
                 this.$.btSplit.addStyles("right: " +  right + "px;");
                 this.$.splitView.getVerses(this.$.mainView.getPassage().passage);
-                //this.$.splitView.resizeHandler();
+                this.$.splitView.resizeHandler();
                 this.$.mainView.resizeHandler(true);
             }
         } else {
@@ -296,7 +306,12 @@ enyo.kind({
 
     handleSyncSplitView: function (inSender, inEvent) {
         if (this.$.splitView.getSync() && this.$.splitPane.showing) {
-            this.$.splitView.getVerses(this.$.mainView.getPassage().passage);
+            if (inSender.goPrev) {
+                this.$.splitView.setGoPrev(true);
+                this.$.splitView.getVerses(this.$.mainView.getPassage().passage);
+                inSender.setGoPrev(false);
+            } else
+                this.$.splitView.getVerses(this.$.mainView.getPassage().passage);
         }
     },
 
@@ -336,6 +351,10 @@ enyo.kind({
     changeBackground: function () {
         this.$.mainView.setBackground(biblez.background);
         this.$.splitView.setBackground(biblez.background);
+    },
+
+    changeScrolling: function (inSender, inEvent) {
+        this.scrollingChanged = true;
     },
 
     //MISC

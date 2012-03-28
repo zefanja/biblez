@@ -19,6 +19,7 @@ enyo.kind({
     events: {
         onPrevChapter: "",
         onNextChapter: "",
+        onChangeVnumber: "",
         onVerseTap: "",
         onShowNote: "",
         onShowFootnote: ""
@@ -49,23 +50,20 @@ enyo.kind({
         tappedNote: 0,
         currentFootnote: "",
         verses: [],
-        view: "main",
-        scrollHorizontal: true
+        view: "main"
 
     },
 
     rendered: function () {
         this.inherited(arguments);
         if (enyo.getCookie("scrolling")) {
-            this.scrollHorizontal = enyo.json.parse(enyo.getCookie("scrolling"));
+            biblez.scrollHorizontal = enyo.json.parse(enyo.getCookie("scrolling"));
         }
-        if (!this.scrollHorizontal)
-            this.changeScrolling(this.scrollHorizontal, true);
+        if (!biblez.scrollHorizontal)
+            this.changeScrolling(biblez.scrollHorizontal, true);
     },
 
     changeScrolling: function (inScrolling, inDontSetSnappers) {
-        this.scrollHorizontal = inScrolling;
-
         if(!inScrolling) {
             this.$.verseSnapper.setIndex(1);
             this.$.view.addRemoveClass("view-verses-single", true);
@@ -217,6 +215,7 @@ enyo.kind({
     },
 
     setSnappers: function (vnumber, resize) {
+        //enyo.log(vnumber);
         //this.inherited(arguments);
         //enyo.log("Resize VerseView", vnumber, resize, this.$.verseSnapper.getIndex(), this.view);
         if (!biblez.isOpen || resize) {
@@ -251,14 +250,18 @@ enyo.kind({
 
             this.$.verseSnapper.createComponent({name: "lastSnapper", kind: "VFlexBox", pack: "center", align: "center", style: "-webkit-box-align: start;-webkit-box-pack: center; width: " + this.$.viewContainer.node.clientWidth + "px;", components: [{name: "nextChapter", content: this.nextPassage, className: "chapter-nav-right chapter-nav"}]}).render();
 
-            if (vnumber) {
+            if (vnumber && vnumber != -1) {
                 var verseID = (this.view === "main") ? "vn" : "vnSplit";
-                if (this.scrollHorizontal) {
+                if (biblez.scrollHorizontal) {
                     //enyo.log(typeof vnumber, vnumber, enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left, this.$.viewContainer.node.clientWidth);
                     this.$.verseSnapper.setIndex((this.view === "main") ? parseInt(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left / this.$.viewContainer.node.clientWidth, 10) + 1 : parseInt((enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left - (window.innerWidth - this.$.viewContainer.node.clientWidth)) / this.$.viewContainer.node.clientWidth, 10) + 1);
                 } else {
                     this.$.mainScroller.scrollIntoView(parseInt(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().top, 10), 0);
                 }
+            } else if (vnumber && vnumber === -1) {
+                this.$.verseSnapper.setIndex(this.numberOfSnappers+1);
+                this.vnumber = 1;
+                this.doChangeVnumber(this.vnumber);
             } else if (resize) {
                 this.$.verseSnapper.setIndex(this.$.verseSnapper.getIndex());
             } else {

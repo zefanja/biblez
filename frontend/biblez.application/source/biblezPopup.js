@@ -390,10 +390,6 @@ enyo.kind({
             ]},
             {name: "prefs", className: "font-prefs", components: [
                 {kind: "Divider", caption: "", className: "font-divider"},
-                {kind: "HFlexBox", align: "center", components: [
-                    {flex: 1, content: $L("Scrolling")},
-                    {name: "toggleScroll", kind: "ToggleButton", onLabel: $L("Horizontal"), offLabel: $L("Vertical"), state: true, onChange: "changeScrolling"}
-                ]},
                 {name: "syncPref", kind: "HFlexBox", align: "center", components: [
                     {flex: 1, content: $L("Sync")},
                     {name: "toggleSync", kind: "ToggleButton", state: true, onChange: "changeSync"}
@@ -410,11 +406,6 @@ enyo.kind({
             this.doSync(state);
             this.$.toggleSync.setState(state);
         }
-
-        if (enyo.getCookie("scrolling")) {
-            this.$.toggleScroll.setState(enyo.json.parse(enyo.getCookie("scrolling")));
-        }
-
     },
 
     sliderChange: function (inSender, inEvent) {
@@ -451,7 +442,7 @@ enyo.kind({
     },
 
     hideSync: function () {
-        this.$.syncPref.hide();
+        this.$.prefs.hide();
     },
 
     changeSync: function (inSender, inState) {

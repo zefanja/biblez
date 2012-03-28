@@ -47,10 +47,10 @@ enyo.kind({
                     {caption: $L("Gray"), value: "palm"},
 					{caption: $L("Night View"), value: "night"}
                 ]},
-                /*{align: "center", components: [
+                {align: "center", components: [
                     {flex: 1, name: "scrolling", content: $L("Scrolling Method")},
                     {name: "toggleScroll", kind: "ToggleButton", onLabel: $L("Horizontal"), offLabel: $L("Vertical"), state: true, onChange: "changeScrolling"}
-                ]},*/
+                ]},
 				{align: "center", components: [
 					{flex: 1, name: "linebreak", content: $L("Enable Linebreaks")},
 					{name: "toggleLB", kind: "ToggleButton", state: this.linebreak, onChange: "changeLinebreak"}
@@ -97,7 +97,13 @@ enyo.kind({
 
     create: function () {
         this.inherited(arguments);
-        //enyo.log("LInebreak");
+        enyo.log("Scrolling: ", enyo.getCookie("scrolling"));
+        if (enyo.getCookie("scrolling")) {
+            biblez.scrollHorizontal = enyo.json.parse(enyo.getCookie("scrolling"));
+            this.$.toggleScroll.setState(biblez.scrollHorizontal);
+
+        }
+
         if (enyo.getCookie("linebreak")) {
             biblez.linebreak = enyo.json.parse(enyo.getCookie("linebreak"));
             this.$.toggleLB.setState(biblez.linebreak);
@@ -154,9 +160,8 @@ enyo.kind({
     },
 
     changeScrolling: function (inSender, inState) {
-        //enyo.log(inState);
-        this.scrolling = !inState;
-        enyo.application.dbSets.scrolling = enyo.json.stringify(!inState);
+        biblez.scrollHorizontal = inState;
+        enyo.setCookie("scrolling", enyo.json.stringify(inState));
         this.doScrollChange();
     },
 

@@ -41,6 +41,13 @@ enyo.kind({
             onSearch: "handleSearch"
             //onClose: "stuffGoBack"
         },
+        {name: "actionMenu", kind: "Menu", components: [
+            {icon: "images/bookMenu.png", onclick: "openSelector"},
+            {icon: "images/historyMenu.png", onclick: "openHistoryMenu"},
+            {icon: "images/searchMenu.png", onclick: "openSearch"},
+            {icon: "images/fontMenu.png", onclick: "openFontMenu"},
+            {icon: "images/sidebarMenu.png", onclick: "openStuff"}
+        ]},
 
         {name: "headerMain", kind: "Header", className: "view-header", components: [
             {name: "verseBox", kind: "HFlexBox", flex: 1, components: [
@@ -50,9 +57,7 @@ enyo.kind({
                 {name: "btHistory", kind: "IconButton", icon: "images/history.png", onclick: "openHistoryMenu", className: "header-button"}
             ]},
             {name: "passageBox", kind: "HFlexBox", flex: 1, components: [
-                //{kind: "Spacer"},
                 {name: "passageLabel", content: "", className: "passage-label", flex: 1}
-                //{kind: "Spacer"}
             ]},
             {name: "personalBox", kind: "HFlexBox", flex: 1, components: [
                 {kind: "Spacer"},
@@ -60,12 +65,14 @@ enyo.kind({
                 {name: "btSearch", kind: "IconButton", icon: "images/search.png", onclick: "openSearch", className: "header-button"},
                 {name: "btFont", kind: "IconButton", icon: "images/font.png", onclick: "openFontMenu", className: "header-button"},
                 {name: "btStuff", kind: "IconButton", icon: "images/sidebar.png", onclick: "openStuff", className: "header-button"}
-            ]}
+            ]},
+            {name: "btAction", showing: false, kind: "IconButton", icon: "images/more.png", onclick: "openActionMenu", className: "header-button"}
         ]},
         {name: "pane", kind: "Pane", transitionKind: "enyo.transitions.Simple", onSelectView: "viewSelected", flex: 1, components: [
             {name: "verseView", kind: "App.VerseView", flex: 1,
                 onPrevChapter: "handlePrevChapter",
                 onNextChapter: "handleNextChapter",
+                onChangeVnumber: "setSelectorVerse",
                 onVerseTap: "handleVerseTap",
                 onShowNote: "openShowNote",
                 onShowFootnote: "openFootnote"
@@ -97,8 +104,11 @@ enyo.kind({
         verses: [],
         view: "main",
         sync: true,
-        background: "default"
+        background: "default",
+        goPrev: false
     },
+
+    btWidth: 0,
 
     create: function () {
         this.inherited(arguments);
@@ -220,7 +230,9 @@ enyo.kind({
         this.$.verseView.setPrevPassage("< " + this.$.selector.getPrevPassage().passage);
         this.$.verseView.setNextPassage(this.$.selector.getNextPassage().passage + " >");
         if (this.verses.length !== 0) {
-            this.$.verseView.setVerses(this.verses, this.$.selector.getVerse());
+            this.$.verseView.setVerses(this.verses, (this.goPrev) ? -1 : this.$.selector.getVerse());
+            if (this.view === "split")
+                this.goPrev = false;
             this.getBookmarks();
             this.getHighlights();
             this.getNotes();
@@ -230,8 +242,8 @@ enyo.kind({
         } else {
             this.$.verseView.setPlain($L("The chapter is not available in this module! :-("));
         }
-
-        this.doSync();
+        if (this.view === "main")
+            this.doSync();
         this.setHistory();
 
         //enyo.log(verses);
@@ -246,6 +258,12 @@ enyo.kind({
     handleGetVMax: function (vmax) {
         //enyo.log(vmax);
         this.$.selector.createSection("verses", parseInt(vmax, 10));
+        if (this.goPrev)
+            this.getVerses(false, parseInt(vmax, 10));
+    },
+
+    setSelectorVerse: function(inSender, vnumber) {
+        this.$.selector.setVerse(vnumber);
     },
 
     handlePrevChapter: function (inSender, inEvent) {
@@ -254,22 +272,27 @@ enyo.kind({
         if (prev.prevBnumber === 0 && prev.prevChapter === 0) {
             this.$.verseView.setIndex(1);
         } else {
-            this.getVerses(prev.passage);
+            //this.getVerses(prev.passage);
             this.$.selector.setBook(prev.prevBook);
             this.$.selector.setChapter(prev.prevChapter);
             this.$.selector.setBnumber(prev.prevBnumber);
-            this.$.selector.setVerse(1);
+            this.goPrev = true;
+            this.getVMax();
+
+            //this.$.selector.setVerse(1);
         }
     },
 
     handleNextChapter: function(inSender, inEvent) {
         var next = this.$.selector.getNextPassage();
+        this.goPrev = false;
         if (next.nextBook !== "" && next.nextChapter !== 0) {
+            this.$.selector.setVerse(1);
             this.getVerses(next.passage);
             this.$.selector.setBook(next.nextBook);
             this.$.selector.setChapter(next.nextChapter);
             this.$.selector.setBnumber(next.nextBnumber);
-            this.$.selector.setVerse(1);
+
         } else {
             this.$.verseView.setIndex(this.$.verseView.getIndex()-1);
         }
@@ -348,8 +371,15 @@ enyo.kind({
         this.$.stuff.setDismissWithClick(true);
     },
 
+    openActionMenu: function (inSender, inEvent) {
+        this.$.actionMenu.openAtEvent(inEvent);
+    },
+
     openFontMenu: function (inSender, inEvent) {
-        this.$.fontMenu.openAtEvent(inEvent);
+        if (inSender.name.search("menuItem") != -1)
+            this.$.fontMenu.openAt({top: 20, left: inEvent.x-40}, true);
+        else
+            this.$.fontMenu.openAtEvent(inEvent);
         this.$.fontMenu.setFontSize(biblez.currentFontSize);
         this.$.fontMenu.setFont(biblez.currentFont);
     },
@@ -379,14 +409,19 @@ enyo.kind({
 
     changeSync: function (inSender, inSync) {
         this.sync = inSync;
+        if (this.sync)
+            this.doSync();
     },
 
-    changeScrolling: function (inSender, inScrolling) {
+    changeScrolling: function (inScrolling) {
         this.$.verseView.changeScrolling(inScrolling);
     },
 
     openHistoryMenu: function (inSender, inEvent) {
-        this.$.historyMenu.openAtEvent(inEvent);
+        if (inSender.name.search("menuItem") != -1)
+            this.$.historyMenu.openAt({top: 20, left: inEvent.x-40}, true);
+        else
+            this.$.historyMenu.openAtEvent(inEvent);
     },
 
     setHistory: function () {
@@ -623,6 +658,7 @@ enyo.kind({
     viewSelected: function (inSender, inView, inPreviousView) {
         if (inView.name === "stuffView") {
             this.$.btModule.hide();
+            this.$.btHistory.hide();
             this.$.btFont.hide();
             this.$.btStuff.hide();
             this.$.btSearch.hide();
@@ -633,6 +669,7 @@ enyo.kind({
         } else if (inView.name === "verseView") {
             this.$.btGo.show();
             this.$.btModule.show();
+            this.$.btHistory.show();
             this.$.btSearch.show();
             this.$.passageBox.show();
             this.$.btFont.show();
@@ -654,15 +691,23 @@ enyo.kind({
 
     resizeHandler: function (resizeVerseView) {
         this.inherited(arguments);
+
+        //if (this.view === "split")
+            //enyo.log(this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth , this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth, this.btWidth);
+        if (this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth > this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120 || this.btWidth > this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120) {
+            this.btWidth = (this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth !== 0) ? this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth : this.btWidth;
+            this.$.personalBox.hide();
+            this.$.btGo.hide();
+            this.$.btHistory.hide();
+            this.$.btAction.show();
+        } else if (this.btWidth < this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120 && this.$.pane.getViewName() !== "stuffView") {
+            this.$.personalBox.show();
+            this.$.btGo.show();
+            this.$.btHistory.show();
+            this.$.btAction.hide();
+        }
+
         this.hidePassageLabel();
-        //enyo.log(this.$.pane.getViewName());
-        //enyo.log(this.$.btModule.hasNode().clientWidth + this.$.btGo.hasNode().clientWidth + 20, this.$.verseBox.hasNode().clientWidth);
-
-
-        /*if (this.$.pane.getViewName() === "stuffView")
-            this.$.passageBox.hide();
-        else
-            this.$.passageBox.show(); */
 
         if (resizeVerseView) {
             this.$.verseView.setSnappers(null, true);

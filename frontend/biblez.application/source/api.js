@@ -81,8 +81,9 @@ enyo.kind({
     },
 
     handleInstalledModules: function (modules) {
-        //enyo.log(modules);
-        this.doGetModules(enyo.json.parse(modules));
+        //enyo.log(modules)
+        var mods = enyo.json.parse(modules);
+        this.doGetModules(mods);
     },
 
     getBooknames:function(inCallback, modName) {
@@ -422,7 +423,7 @@ var api = {
         var modules = [];
         try {
             //var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND modType = 'texts' ORDER BY modType, modName ASC;";
-            var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' ORDER BY modType DESC, modName ASC;"; //AND (modType = 'texts' OR modType = 'comments')
+            var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND (modType = 'texts' OR modType = 'comments') ORDER BY modType DESC, modName ASC;";
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sql, [],
