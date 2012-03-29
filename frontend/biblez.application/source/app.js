@@ -38,8 +38,8 @@ enyo.kind({
         {name: "biblezAbout", kind: "BibleZ.About"},
         {name: "errorDialog", kind: "BibleZ.Error"},
         {name: "mainPane", flex: 1, kind: "Pane", transitionKind: "enyo.transitions.Simple", onSelectView: "viewSelected", components: [
-            //{name: "start", kind: "App.Start"},
-            //{name: "welcome", kind: "App.Welcome", onOpenModMan: "openModuleMgr"},
+            {name: "start", kind: "App.Start"},
+            {name: "welcome", kind: "App.Welcome", onOpenModMan: "openModuleMgr"},
             {name: "verseView", kind: "HFlexBox",/* className: "scroller-background", */ components: [
                 {name: "mainView", kind: "App.MainView", flex: 1,
                     onGetModules: "handleGetModules",
@@ -130,9 +130,9 @@ enyo.kind({
         this.$.swordApi.getBooknames(enyo.bind(inSender, inSender.handleGetBooknames), module);
     },
 
-    handleGetVerses: function (inSender, passage, module) {
+    handleGetVerses: function (inSender, passage, module, single) {
         //enyo.log(inSender, passage, module);
-        this.$.swordApi.getVerses(enyo.bind(inSender, inSender.handleGetVerses), passage, module);
+        this.$.swordApi.getVerses(enyo.bind(inSender, inSender.handleGetVerses), passage, module, single);
     },
 
     handleGetVMax: function (inSender, passage) {

@@ -503,6 +503,12 @@ a {
     font-size: 0.8em;
 }
 
+.popup-caption {
+    font-weight: bold;
+    font-size: 0.8em;
+    text-align: center;
+}
+
 .font-menu {
     font-size: 0.8em;
     padding-top: 14px;

@@ -32,6 +32,7 @@ enyo.kind({
         },
         {name: "fontMenu", kind: "BibleZ.FontMenu", onFontSize: "changeFontSize", onFont: "changeFont", onSync: "changeSync", onScrolling: "changeScrolling"},
         {name: "historyMenu", kind: "Menu", lazy: false},
+        {name: "crossRefMenu", kind: "Menu", lazy: false},
         {name: "library", kind: "App.Library", onSelectModule: "handleSelectModules"},
         {name: "selector", kind: "App.Selector", onChapter: "getVMax", onVerse: "handleOnVerse"},
         {name: "stuff", kind: "App.StuffPopup",
@@ -75,7 +76,8 @@ enyo.kind({
                 onChangeVnumber: "setSelectorVerse",
                 onVerseTap: "handleVerseTap",
                 onShowNote: "openShowNote",
-                onShowFootnote: "openFootnote"
+                onShowFootnote: "openFootnote",
+                onShowCrossRef: "openCrossRef"
             },
             {name: "stuffView", style: "padding: 10px;", kind: "App.Stuff", view: "split",
                 onVerse: "handleStuffVerse",
@@ -109,6 +111,7 @@ enyo.kind({
     },
 
     btWidth: 0,
+    currentCrossRef: false,
 
     create: function () {
         this.inherited(arguments);
@@ -210,41 +213,57 @@ enyo.kind({
         this.getVerses();
     },
 
-    getVerses: function (passage, verse) {
+    getVerses: function (passage, verse, single) {
         if (!passage)
             passage = this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter();
         if (verse)
             this.$.selector.setVerse(verse);
+        if (!single)
+            single = false;
         //enyo.log(this.$.pane.getViewName());
         if (this.$.pane.getViewName() === "verseView")
-            this.doGetVerses(passage, this.currentModule.name);
+            this.doGetVerses(passage, this.currentModule.name, single);
         //this.$.swordApi.getVerses(passage, this.currentModule.name);
     },
 
     handleGetVerses: function (response) {
-        //enyo.log(response.split("<#split#>")[1]);
-        this.verses = enyo.json.parse(response.split("<#split#>")[0]);
-        this.passage = enyo.json.parse(response.split("<#split#>")[1]);
-        this.$.passageLabel.setContent(this.passage.bookName + " " + this.passage.cnumber);
-        this.$.selector.setCurrentPassage(this.passage);
-        this.$.verseView.setPrevPassage("< " + this.$.selector.getPrevPassage().passage);
-        this.$.verseView.setNextPassage(this.$.selector.getNextPassage().passage + " >");
-        if (this.verses.length !== 0) {
-            this.$.verseView.setVerses(this.verses, (this.goPrev) ? -1 : this.$.selector.getVerse());
-            if (this.view === "split")
-                this.goPrev = false;
-            this.getBookmarks();
-            this.getHighlights();
-            this.getNotes();
-            if (this.view === "split")
-                this.$.stuffView.setBookCaption(this.passage.abbrev);
-            this.$.stuff.getStuffKind().setBookCaption(this.passage.abbrev);
+        var tmpVerses = enyo.json.parse(response.split("<#split#>")[0]);
+        var tmpPassage = enyo.json.parse(response.split("<#split#>")[1]);
+        if (!this.currentCrossRef) {
+            this.verses = tmpVerses;
+            this.passage = tmpPassage;
+            this.$.passageLabel.setContent(this.passage.bookName + " " + this.passage.cnumber);
+            this.$.selector.setCurrentPassage(this.passage);
+            this.$.verseView.setPrevPassage("< " + this.$.selector.getPrevPassage().passage);
+            this.$.verseView.setNextPassage(this.$.selector.getNextPassage().passage + " >");
+        }
+        if (tmpVerses.length !== 0) {
+            if (!this.currentCrossRef) {
+                this.$.verseView.setVerses(this.verses, (this.goPrev) ? -1 : this.$.selector.getVerse());
+                if (this.view === "split")
+                    this.goPrev = false;
+                this.getBookmarks();
+                this.getHighlights();
+                this.getNotes();
+                if (this.view === "split")
+                    this.$.stuffView.setBookCaption(this.passage.abbrev);
+                this.$.stuff.getStuffKind().setBookCaption(this.passage.abbrev);
+            } else {
+                this.$.noteView.setNote(api.renderVerses(tmpVerses, 1, this.view, true));
+                this.$.noteView.setCaption(tmpPassage.passageSingle);
+                this.$.noteView.openAt({top: this.currentCrossRef.top, left: this.currentCrossRef.left}, true);
+                this.$.noteView.setShowType("footnote");
+            }
         } else {
             this.$.verseView.setPlain($L("The chapter is not available in this module! :-("));
         }
-        if (this.view === "main")
+        if (this.view === "main" && !this.crossRef)
             this.doSync();
+
+        this.currentCrossRef = false;
         this.setHistory();
+
+
 
         //enyo.log(verses);
         //enyo.log(passage);
@@ -458,6 +477,7 @@ enyo.kind({
 
     handleSelectHistory: function (inSender, inEvent) {
         this.$.selector.setVerse(1);
+        this.goPrev = false;
         this.getVerses(inSender.passage.passage);
     },
 
@@ -632,8 +652,39 @@ enyo.kind({
     openFootnote: function (inSender, inEvent) {
         //enyo.log("Show footnote...");
         this.$.noteView.setNote(inSender.currentFootnote);
+        this.$.noteView.setCaption("");
         this.$.noteView.openAt({top: inSender.popupTop, left: inSender.popupLeft}, true);
         this.$.noteView.setShowType("footnote");
+    },
+
+    openCrossRef: function (inSender, crossRef) {
+        //enyo.log(crossRef);
+        if (crossRef.refList.split(";").length === 1) {
+            this.currentCrossRef = {top: inSender.popupTop, left: inSender.popupLeft};
+            this.getVerses(crossRef.refList, false, true);
+        } else {
+            var tmpRefs = crossRef.refList.split(";");
+            var comp = this.getComponents();
+            for (var j=0;j<comp.length;j++) {
+                if (comp[j].name.search(/crossRefItem\d+/) != -1) {
+                    comp[j].destroy();
+                }
+            }
+
+            var kindName = "";
+            for (var i=0;i<tmpRefs.length;i++) {
+                kindName = "crossRefItem" + i;
+                this.$.crossRefMenu.createComponent({name: kindName, kind: "MenuItem", passage: tmpRefs[i], caption: tmpRefs[i].replace(".", " ").replace(".",":"), top: inSender.popupTop, left: inSender.popupLeft, onclick: "handleSelectCrossRef", className: "module-item"}, {owner: this});
+            }
+            this.$.crossRefMenu.render();
+            this.$.crossRefMenu.openAt({top: inSender.popupTop, left: inSender.popupLeft}, true);
+        }
+    },
+
+    handleSelectCrossRef: function (inSender, inEvent) {
+        //this.$.selector.setVerse(1);
+        this.currentCrossRef = {top: inSender.top, left: inSender.left};
+        this.getVerses(inSender.passage, false, true);
     },
 
     //PANE STUFF

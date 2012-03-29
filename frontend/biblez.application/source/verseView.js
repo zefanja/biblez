@@ -22,7 +22,8 @@ enyo.kind({
         onChangeVnumber: "",
         onVerseTap: "",
         onShowNote: "",
-        onShowFootnote: ""
+        onShowFootnote: "",
+        onShowCrossRef: ""
     },
     components: [
             {kind: "ApplicationEvents", onWindowRotated: "windowRotated"},
@@ -94,7 +95,7 @@ enyo.kind({
         this.$.verseSnapper.setIndex(1);
         this.verses = verses;
 
-        this.$.view.setContent(api.renderVerses(verses, vnumber, biblez.linebreak, this.view));
+        this.$.view.setContent(api.renderVerses(verses, vnumber, this.view));
 
         this.setSnappers(vnumber);
     },
@@ -123,14 +124,28 @@ enyo.kind({
             this.popupLeft = enyo.byId(noteID + this.tappedNote).getBoundingClientRect().left;
             this.doShowNote();
         } else if (urlParams.action == "showNote") {
-            var footnoteID = (this.view === "main") ? "footnote" : "footnoteSplit";
-            //enyo.log(footnoteID);
-            this.currentFootnote = this.verses[parseInt(urlParams.passage.split(":")[1], 10)-1].footnotes[parseInt(urlParams.value, 10)-1].body;
-            //enyo.log(enyo.application.verses[parseInt(urlParams.passage.split(":")[1], 10)-1].footnotes[parseInt(urlParams.value, 10)-1].body);
+            //enyo.log(urlParams);
+            var id = "";
             this.tappedVerse = parseInt(urlParams.passage.split(":")[1], 10);
-            this.popupTop = enyo.byId(footnoteID + this.tappedVerse).getBoundingClientRect().top;
-            this.popupLeft = enyo.byId(footnoteID + this.tappedVerse).getBoundingClientRect().left;
-            this.doShowFootnote();
+
+            if (urlParams.type === "n") {
+                id = (this.view === "main") ? "footnote" : "footnoteSplit";
+                this.popupTop = enyo.byId(id + this.tappedVerse + urlParams.value).getBoundingClientRect().top;
+                this.popupLeft = enyo.byId(id + this.tappedVerse + urlParams.value).getBoundingClientRect().left;
+                this.currentFootnote = this.verses[parseInt(urlParams.passage.split(":")[1], 10)-1].footnotes[parseInt(urlParams.value, 10)-1].body;
+            } else if (urlParams.type === "x") {
+                id = (this.view === "main") ? "crossRef" : "crossRefSplit";
+                this.popupTop = enyo.byId(id + this.tappedVerse + urlParams.value).getBoundingClientRect().top;
+                this.popupLeft = enyo.byId(id + this.tappedVerse + urlParams.value).getBoundingClientRect().left;
+                this.currentFootnote = this.verses[parseInt(urlParams.passage.split(":")[1], 10)-1].footnotes[parseInt(urlParams.value, 10)-1];
+            }
+
+
+            //enyo.log(this.verses[parseInt(urlParams.passage.split(":")[1], 10)-1].footnotes[parseInt(urlParams.value, 10)-1]);
+            if (urlParams.type === "n")
+                this.doShowFootnote();
+            else if (urlParams.type === "x")
+                this.doShowCrossRef(this.currentFootnote);
         }
     },
 

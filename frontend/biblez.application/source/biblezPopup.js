@@ -337,6 +337,7 @@ enyo.kind({
     },
     components:[
         {kind: "BasicScroller", autoVertical: true, style: "height: auto;", flex: 1, components: [
+            {name: "noteCaption", allowHtml: true, content: "", className: "popup-caption"},
             {name: "noteContent", allowHtml: true, content: "", className: "popup-note", onclick: "handleNoteTap"}
         ]}
         //{kind: "Button", caption: $L("OK"), onclick: "closePopup", style: "margin-top:10px"}
@@ -344,6 +345,10 @@ enyo.kind({
 
     setNote: function (note) {
         this.$.noteContent.setContent(note.replace(/"/g,""));
+    },
+
+    setCaption: function (caption) {
+        this.$.noteCaption.setContent(caption);
     },
 
     handleNoteTap: function (inSender, inEvent) {

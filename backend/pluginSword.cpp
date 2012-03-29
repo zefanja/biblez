@@ -650,6 +650,7 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	/*Get verses from a specific module (e.g. "ESV"). Set your biblepassage in key e.g. "James 1:19" */
 	const char* moduleName = PDL_GetJSParamString(parms, 0);
 	const char* key = PDL_GetJSParamString(parms, 1);
+	const char* single = PDL_GetJSParamString(parms, 2);
 	//const char* side = PDL_GetJSParamString(parms, 2);
 	std::stringstream passage;
 	std::stringstream tmpPassage;
@@ -666,9 +667,13 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	VerseKey *vk = (VerseKey*)module->getKey();
 	vk->Headings(true);
 
-	passage << "{\"bookName\": \"" << vk->getBookName() << "\", \"cnumber\": \"" << vk->Chapter()  << "\", \"vnumber\": \"" << vk->Verse() << "\", \"passage\" : \"" << vk->getShortText() << "\", \"abbrev\": \"" << vk->getBookAbbrev() << "\"}";
-	tmpPassage << vk->getBookName() << " " << vk->Chapter();
-	ListKey verses = VerseKey().ParseVerseList(tmpPassage.str().c_str(), "", true);
+	passage << "{\"bookName\": \"" << vk->getBookName() << "\", \"cnumber\": \"" << vk->Chapter()  << "\", \"vnumber\": \"" << vk->Verse() << "\", \"passageSingle\" : \"" << vk->getBookName() << " " << vk->Chapter() << ":" << vk->Verse() << "\", \"passage\" : \"" << vk->getBookName() << " " << vk->Chapter() << "\", \"abbrev\": \"" << vk->getBookAbbrev() << "\"}";
+	if (strcmp(single, "true") == 0) {
+		tmpPassage << vk->getBookName() << " " << vk->Chapter() << ":" << vk->Verse();
+	} else {
+		tmpPassage << vk->getBookName() << " " << vk->Chapter();
+	}
+	ListKey verses = VerseKey().ParseVerseList(key, "", true); //tmpPassage.str().c_str()
 
 	AttributeTypeList::iterator i1;
 	AttributeList::iterator i2;

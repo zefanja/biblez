@@ -103,11 +103,13 @@ enyo.kind({
         this.doGetBooknames(enyo.json.parse(bnames));
     },
 
-    getVerses: function(inCallback, passage, module) {
+    getVerses: function(inCallback, passage, module, single) {
         //enyo.log(passage, module);
         if(!module)
             module = enyo.json.parse(enyo.getCookie("mainModule")).name;
-        try {var status = this.$.sword.callPluginMethodDeferred(inCallback, "getVerses", module, passage);}
+        if (!single)
+            single = false;
+        try {var status = this.$.sword.callPluginMethodDeferred(inCallback, "getVerses", module, passage, single);}
         catch (e) {this.showError("Plugin exception: " + e);}
         /*if (this.pluginReady) {
             try {var status = this.$.sword.callPluginMethod("getVerses", module, passage);}
@@ -808,27 +810,42 @@ var api = {
         }
     },
 
-    renderVerses: function (verses, vnumber, linebreak, view) {
+    renderVerses: function (verses, vnumber, view, plain) {
         var findBreak = "";
         var content = "";
         var tmpVerse = "";
+        var tmpMatch = 0;
         var noteID = (view == "split") ? "noteIconSplit" : "noteIcon";
         var bmID = (view == "split") ? "bmIconSplit" : "bmIcon";
         var verseID = (view == "split") ? "verseSplit" : "verse";
         var vnID = (view == "split") ? "vnSplit" : "vn";
         var fnID = (view == "split") ? "footnoteSplit" : "footnote";
+        var crossID = (view == "split") ? "crossRefSplit" : "crossRef";
         var notes = [];
 
         for (var i=0; i<verses.length; i++) {
             //.replace(/\*x/g,"")
-            tmpVerse = verses[i].content.replace(/color=\u0022red\u0022/g,"color=\u0022#E60000\u0022").replace(/\*x/g,"");
+            tmpVerse = verses[i].content.replace(/color=\u0022red\u0022/g,"color=\u0022#E60000\u0022");
             //enyo.log(tmpVerse);
 
-            if (!biblez.footnote) {
-                tmpVerse = tmpVerse.replace(/<small><sup[^>]*>\*n<\/sup><\/small>/g, "");
-            } else {
-                tmpVerse = tmpVerse.replace(/<small><sup[^>]*>\*n<\/sup><\/small>/g, " <img id='" + fnID + verses[i].vnumber + "' src='images/footnote.png' />");
+            tmpMatch = tmpVerse.match(/<small><sup[^>]*>\*x<\/sup><\/small>|<small><sup[^>]*>\*n<\/sup><\/small>/g);
+            if (tmpMatch) {
+                for (var j=0; j<tmpMatch.length; j++) {
+                    if (tmpMatch[j].search(/<small><sup[^>]*>\*x<\/sup><\/small>/) !== -1) {
+                        if (!biblez.crossRef || plain)
+                            tmpVerse = tmpVerse.replace(/<small><sup[^>]*>\*x<\/sup><\/small>/g, "");
+                        else
+                            tmpVerse = tmpVerse.replace(/<small><sup[^>]*>\*x<\/sup><\/small>/, " <img id='" + crossID + verses[i].vnumber + (j+1) + "' src='images/crossRef.png'/>");
+                    } else if (tmpMatch[j].search(/<small><sup[^>]*>\*n<\/sup><\/small>/) !== -1) {
+                        if (!biblez.footnote || plain)
+                            tmpVerse = tmpVerse.replace(/<small><sup[^>]*>\*n<\/sup><\/small>/g, "");
+                        else
+                            tmpVerse = tmpVerse.replace(/<small><sup[^>]*>\*n<\/sup><\/small>/, " <img id='" + fnID + verses[i].vnumber + (j+1) + "' src='images/footnote.png' />");
+                    }
+                }
             }
+
+            //enyo.log(verses[i].vnumber, tmpVerse);
 
             if (tmpVerse.search("<br /><br />") != -1) {
                 findBreak = "<br /><br />";
@@ -841,7 +858,8 @@ var api = {
                 content = content + "<div class='verse-intro'>" + verses[i].intro + "</div>";
             }
 
-            if (verses[i].heading && biblez.heading) {
+
+            if (verses[i].heading && biblez.heading && !plain) {
                 //enyo.log("Heading:", verses[i].heading);
                 content = content + "<div class='verse-heading'>" + verses[i].heading.replace(/<[^>]*>?/g, "") + "</div>";
             }
@@ -852,7 +870,7 @@ var api = {
             content = content + " <span id='" + bmID + verses[i].vnumber + "'></span> ";
             content = content + findBreak;
 
-            if (linebreak) {
+            if (biblez.linebreak) {
                 content = content + "<br>";
             }
         }

@@ -66,6 +66,10 @@ enyo.kind({
                 {align: "center", components: [
                     {flex: 1, name: "footnotes", content: $L("Enable Footnotes")},
                     {name: "toggleFN", kind: "ToggleButton", state: true, onChange: "changeFootnote"}
+                ]},
+                {align: "center", components: [
+                    {flex: 1, name: "crossRef", content: $L("Enable Cross References")},
+                    {name: "toggleCR", kind: "ToggleButton", state: false, onChange: "changeCrossRef"}
                 ]}
             ]},
             {kind: "Group", caption: $L("Custom Fonts"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
@@ -130,6 +134,13 @@ enyo.kind({
             biblez.footnote = true;
         }
 
+        if (enyo.getCookie("crossRef")) {
+            biblez.crossRef = enyo.json.parse(enyo.getCookie("crossRef"));
+            this.$.toggleCR.setState(biblez.crossRef);
+        } else {
+            biblez.crossRef = false;
+        }
+
         if (enyo.getCookie("background")) {
             biblez.background = enyo.json.parse(enyo.getCookie("background"));
             this.$.generalSelector.setValue(biblez.background);
@@ -187,6 +198,12 @@ enyo.kind({
         //enyo.log(inState);
         enyo.setCookie("footnote", enyo.json.stringify(inState));
         biblez.footnote = inState;
+    },
+
+    changeCrossRef: function (inSender, inState) {
+        //enyo.log(inState);
+        enyo.setCookie("crossRef", enyo.json.stringify(inState));
+        biblez.crossRef = inState;
     },
 
     scrollingChanged: function (inSender, inEvent) {
