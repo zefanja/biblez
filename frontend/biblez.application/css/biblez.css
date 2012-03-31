@@ -348,11 +348,39 @@ a {
     vertical-align: middle;
 }
 
-.books-ot {
-    background-color: #DAA520; /*#A0522D #CD853F*/
+.books-tora {
+    background-color: #AE841A;
 }
 
-.books-nt {
+.books-historical {
+    background-color: #DAA520;
+}
+
+.books-wisdom {
+    background-color: #E7C571;
+}
+
+.books-prophet {
+    background-color: #F0E68C;
+}
+
+.books-gospel {
+    background-color: #AE841A;
+}
+
+.books-act {
+    background-color: #DAA520;
+}
+
+.books-paul {
+    background-color: #E1B74D;
+}
+
+.books-other {
+    background-color: #EDD28E;
+}
+
+.books-rev {
     background-color: #F0E68C;
 }
 

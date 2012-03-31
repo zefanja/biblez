@@ -256,6 +256,7 @@ enyo.kind({
             }
         } else {
             this.$.verseView.setPlain($L("The chapter is not available in this module! :-("));
+            this.$.verseView.setIndex(1);
         }
         if (this.view === "main" && !this.crossRef)
             this.doSync();
@@ -447,17 +448,17 @@ enyo.kind({
         var history = [];
         if(enyo.getCookie("history")) {
             history = enyo.json.parse(enyo.getCookie("history"));
-            if (history.length > 10) {
-                history.splice(11,history.length-10);
+            if (history.length > 12) {
+                history.splice(13,history.length-12);
             }
             for (var l=0;l<history.length;l++) {
-                if(history[l].passage == this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter()) {
+                if(history[l].single == this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter() + ":" + this.$.selector.getVerse()) {
                     history.splice(l,1);
                 }
             }
         }
 
-        history.unshift({"passage": this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter()});
+        history.unshift({"passage": this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter(), "single": this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter() + ":" + this.$.selector.getVerse(), "verse" : this.$.selector.getVerse()});
         enyo.setCookie("history", enyo.json.stringify(history));
 
         var comp = this.getComponents();
@@ -470,15 +471,15 @@ enyo.kind({
         var kindName = "";
         for (var i=0;i<history.length;i++) {
             kindName = "historyItem" + i;
-            this.$.historyMenu.createComponent({name: kindName, kind: "MenuItem", passage: history[i], caption: history[i].passage, onclick: "handleSelectHistory", className: "module-item"}, {owner: this});
+            this.$.historyMenu.createComponent({name: kindName, kind: "MenuItem", passage: history[i].passage, verse: history[i].verse, caption: history[i].single, onclick: "handleSelectHistory", className: "module-item"}, {owner: this});
         }
         this.$.historyMenu.render();
     },
 
     handleSelectHistory: function (inSender, inEvent) {
-        this.$.selector.setVerse(1);
+        this.$.selector.setVerse((inSender.verse) ? inSender.verse : 1);
         this.goPrev = false;
-        this.getVerses(inSender.passage.passage);
+        this.getVerses(inSender.passage);
     },
 
     //VERSE POPUP

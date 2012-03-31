@@ -177,13 +177,76 @@ enyo.kind({
                 //this.$.bookSelector.createComponent({name: "book1000", kind: "Divider", caption: "Old Testament"}, {owner: this});
                 for (var i=0;i<data.length;i++) {
                     kindName = "book" + i;
-                    if (i<39) {
+                    if (i<5) {
                         //this.$.bookSelector.createComponent({name: "book1001", kind: "Divider", caption: "New Testament", style: "clear: both;"}, {owner: this});
                         this.$.bookSelector.createComponent({kind: "Button",
                             caption: data[i].abbrev.slice(0,5),
                             onclick: "handleBooks",
                             onmousehold: "handleVerses",
-                            className: "book-selector books-ot",
+                            className: "book-selector books-tora",
+                            name: kindName,
+                            key: i}, {owner: this});
+                    } else if (i<17) {
+                        //this.$.bookSelector.createComponent({name: "book1001", kind: "Divider", caption: "New Testament", style: "clear: both;"}, {owner: this});
+                        this.$.bookSelector.createComponent({kind: "Button",
+                            caption: data[i].abbrev.slice(0,5),
+                            onclick: "handleBooks",
+                            onmousehold: "handleVerses",
+                            className: "book-selector books-historical",
+                            name: kindName,
+                            key: i}, {owner: this});
+                    } else if (i<22) {
+                        //this.$.bookSelector.createComponent({name: "book1001", kind: "Divider", caption: "New Testament", style: "clear: both;"}, {owner: this});
+                        this.$.bookSelector.createComponent({kind: "Button",
+                            caption: data[i].abbrev.slice(0,5),
+                            onclick: "handleBooks",
+                            onmousehold: "handleVerses",
+                            className: "book-selector books-wisdom",
+                            name: kindName,
+                            key: i}, {owner: this});
+                    } else if (i<39) {
+                        //this.$.bookSelector.createComponent({name: "book1001", kind: "Divider", caption: "New Testament", style: "clear: both;"}, {owner: this});
+                        this.$.bookSelector.createComponent({kind: "Button",
+                            caption: data[i].abbrev.slice(0,5),
+                            onclick: "handleBooks",
+                            onmousehold: "handleVerses",
+                            className: "book-selector books-prophet",
+                            name: kindName,
+                            key: i}, {owner: this});
+                    } else if (i<43) {
+                        //this.$.bookSelector.createComponent({name: "book1001", kind: "Divider", caption: "New Testament", style: "clear: both;"}, {owner: this});
+                        this.$.bookSelector.createComponent({kind: "Button",
+                            caption: data[i].abbrev.slice(0,5),
+                            onclick: "handleBooks",
+                            onmousehold: "handleVerses",
+                            className: "book-selector books-gospel",
+                            name: kindName,
+                            key: i}, {owner: this});
+                    } else if (i === 43) {
+                        //this.$.bookSelector.createComponent({name: "book1001", kind: "Divider", caption: "New Testament", style: "clear: both;"}, {owner: this});
+                        this.$.bookSelector.createComponent({kind: "Button",
+                            caption: data[i].abbrev.slice(0,5),
+                            onclick: "handleBooks",
+                            onmousehold: "handleVerses",
+                            className: "book-selector books-act",
+                            name: kindName,
+                            key: i}, {owner: this});
+                    } else if (i<57) {
+                        //this.$.bookSelector.createComponent({name: "book1001", kind: "Divider", caption: "New Testament", style: "clear: both;"}, {owner: this});
+                        this.$.bookSelector.createComponent({kind: "Button",
+                            caption: data[i].abbrev.slice(0,5),
+                            onclick: "handleBooks",
+                            onmousehold: "handleVerses",
+                            className: "book-selector books-paul",
+                            name: kindName,
+                            key: i}, {owner: this});
+                    } else if (i<65) {
+                        //this.$.bookSelector.createComponent({name: "book1001", kind: "Divider", caption: "New Testament", style: "clear: both;"}, {owner: this});
+                        this.$.bookSelector.createComponent({kind: "Button",
+                            caption: data[i].abbrev.slice(0,5),
+                            onclick: "handleBooks",
+                            onmousehold: "handleVerses",
+                            className: "book-selector books-other",
                             name: kindName,
                             key: i}, {owner: this});
                     } else {
@@ -191,7 +254,7 @@ enyo.kind({
                             caption: data[i].abbrev.slice(0,5),
                             onclick: "handleBooks",
                             onmousehold: "handleVerses",
-                            className: "book-selector books-nt",
+                            className: "book-selector books-rev",
                             name: kindName,
                             key: i}, {owner: this});
                     }

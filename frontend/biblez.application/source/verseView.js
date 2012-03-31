@@ -267,11 +267,15 @@ enyo.kind({
 
             if (vnumber && vnumber != -1) {
                 var verseID = (this.view === "main") ? "vn" : "vnSplit";
-                if (biblez.scrollHorizontal) {
-                    //enyo.log(typeof vnumber, vnumber, enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left, this.$.viewContainer.node.clientWidth);
-                    this.$.verseSnapper.setIndex((this.view === "main") ? parseInt(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left / this.$.viewContainer.node.clientWidth, 10) + 1 : parseInt((enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left - (window.innerWidth - this.$.viewContainer.node.clientWidth)) / this.$.viewContainer.node.clientWidth, 10) + 1);
+                if (enyo.byId(verseID + enyo.json.stringify(vnumber))) {
+                    if (biblez.scrollHorizontal) {
+                        //enyo.log(typeof vnumber, vnumber, enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left, this.$.viewContainer.node.clientWidth);
+                        this.$.verseSnapper.setIndex((this.view === "main") ? parseInt(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left / this.$.viewContainer.node.clientWidth, 10) + 1 : parseInt((enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left - (window.innerWidth - this.$.viewContainer.node.clientWidth)) / this.$.viewContainer.node.clientWidth, 10) + 1);
+                    } else {
+                        this.$.mainScroller.scrollIntoView(parseInt(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().top, 10), 0);
+                    }
                 } else {
-                    this.$.mainScroller.scrollIntoView(parseInt(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().top, 10), 0);
+                    this.verseSnapper.setIndex(1);
                 }
             } else if (vnumber && vnumber === -1) {
                 this.$.verseSnapper.setIndex(this.numberOfSnappers+1);

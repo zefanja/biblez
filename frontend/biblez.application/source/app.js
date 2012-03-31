@@ -31,6 +31,7 @@ enyo.kind({
         {kind: "AppMenu", components: [
             {caption: $L("Module Manager"), onclick: "openModuleMgr"},
             {caption: $L("Preferences"), onclick: "openPrefs"},
+            {caption: $L("Disable Auto Dimm"), onclick: "setDimm", dimm: true},
             {caption: $L("Help"), onclick: "openHelp"},
             {caption: $L("Leave A Review"), onclick: "openReview"},
             {caption: $L("About"), onclick: "openAbout"}
@@ -330,6 +331,18 @@ enyo.kind({
         this.$.mainPane.selectViewByName("prefs");
     },
 
+    setDimm: function (inSender, inEvent) {
+        if (inSender.dimm) {
+            inSender.setCaption($L("Enable Auto Dimm"));
+            inSender.dimm = false;
+            enyo.windows.setWindowProperties(window, {blockScreenTimeout: true});
+        } else {
+            inSender.setCaption($L("Disable Auto Dimm"));
+            inSender.dimm = true;
+            enyo.windows.setWindowProperties(window, {blockScreenTimeout: false});
+        }
+    },
+
     openHelp: function () {
         this.$.palmService.call({
             id: 'com.palm.app.browser',
@@ -360,6 +373,7 @@ enyo.kind({
     //MISC
 
     saveSettings: function () {
+        enyo.windows.setWindowProperties(window, {blockScreenTimeout: false});
         enyo.setCookie("passage", enyo.json.stringify(this.$.mainView.getPassage()));
         enyo.setCookie("mainModule", enyo.json.stringify(this.$.mainView.getCurrentModule()));
         enyo.setCookie("splitModule", enyo.json.stringify(this.$.splitView.getCurrentModule()));
