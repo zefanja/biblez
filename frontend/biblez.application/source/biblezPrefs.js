@@ -70,6 +70,10 @@ enyo.kind({
                 {align: "center", components: [
                     {flex: 1, name: "crossRef", content: $L("Enable Cross References")},
                     {name: "toggleCR", kind: "ToggleButton", state: false, onChange: "changeCrossRef"}
+                ]},
+                {align: "center", components: [
+                    {flex: 1, name: "strongs", content: $L("Enable Strong's Numbers")},
+                    {name: "toggleStrongs", kind: "ToggleButton", state: false, onChange: "changeStrongs"}
                 ]}
             ]},
             {kind: "Group", caption: $L("Custom Fonts"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
@@ -141,6 +145,13 @@ enyo.kind({
             biblez.crossRef = false;
         }
 
+        if (enyo.getCookie("strongs")) {
+            biblez.strongs = enyo.json.parse(enyo.getCookie("strongs"));
+            this.$.toggleStrongs.setState(biblez.strongs);
+        } else {
+            biblez.strongs = false;
+        }
+
         if (enyo.getCookie("background")) {
             biblez.background = enyo.json.parse(enyo.getCookie("background"));
             this.$.generalSelector.setValue(biblez.background);
@@ -204,6 +215,12 @@ enyo.kind({
         //enyo.log(inState);
         enyo.setCookie("crossRef", enyo.json.stringify(inState));
         biblez.crossRef = inState;
+    },
+
+    changeStrongs: function (inSender, inState) {
+        //enyo.log(inState);
+        enyo.setCookie("strongs", enyo.json.stringify(inState));
+        biblez.strongs = inState;
     },
 
     scrollingChanged: function (inSender, inEvent) {

@@ -144,7 +144,7 @@ void refreshManagers() {
 	searchLibrary = new SWMgr();
     displayLibrary->setGlobalOption("Footnotes","On");
 	displayLibrary->setGlobalOption("Headings", "On");
-	//displayLibrary->setGlobalOption("Strong's Numbers", "On");
+	displayLibrary->setGlobalOption("Strong's Numbers", "On");
 }
 
 /*INSTALL MANAGER STUFF */
@@ -650,7 +650,7 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	/*Get verses from a specific module (e.g. "ESV"). Set your biblepassage in key e.g. "James 1:19" */
 	const char* moduleName = PDL_GetJSParamString(parms, 0);
 	const char* key = PDL_GetJSParamString(parms, 1);
-	const char* single = PDL_GetJSParamString(parms, 2);
+	//const char* single = PDL_GetJSParamString(parms, 2);
 	//const char* side = PDL_GetJSParamString(parms, 2);
 	std::stringstream passage;
 	std::stringstream tmpPassage;
@@ -668,11 +668,11 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	vk->Headings(true);
 
 	passage << "{\"bookName\": \"" << vk->getBookName() << "\", \"cnumber\": \"" << vk->Chapter()  << "\", \"vnumber\": \"" << vk->Verse() << "\", \"passageSingle\" : \"" << vk->getBookName() << " " << vk->Chapter() << ":" << vk->Verse() << "\", \"passage\" : \"" << vk->getBookName() << " " << vk->Chapter() << "\", \"abbrev\": \"" << vk->getBookAbbrev() << "\"}";
-	if (strcmp(single, "true") == 0) {
+	/*if (strcmp(single, "true") == 0) {
 		tmpPassage << vk->getBookName() << " " << vk->Chapter() << ":" << vk->Verse();
 	} else {
 		tmpPassage << vk->getBookName() << " " << vk->Chapter();
-	}
+	}*/
 	ListKey verses = VerseKey().ParseVerseList(key, "", true); //tmpPassage.str().c_str()
 
 	AttributeTypeList::iterator i1;
@@ -699,6 +699,22 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 						for (i3 = i2->second.begin(); i3 != i2->second.end(); i3++) {
 							out << "\"" << i3->first << "\": \"" << convertString(i3->second.c_str()) << "\"";
 							//footnotesOn = 1;
+							if (i3 != --i2->second.end()) {
+								out << ", ";
+							}
+						}
+						out << "}";
+						if (i2 != --i1->second.end()) {
+							out << ", ";
+						}
+					}
+					out << "]";
+				} else if (strcmp(i1->first, "Word") == 0) {
+					out << ", \"words\": [";
+					for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++) {
+						out << "{";
+						for (i3 = i2->second.begin(); i3 != i2->second.end(); i3++) {
+							out << "\"" << i3->first << "\": \"" << convertString(i3->second.c_str()) << "\"";
 							if (i3 != --i2->second.end()) {
 								out << ", ";
 							}
@@ -745,6 +761,26 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	//params[1] = side;
 	//params[1] = tmp2.c_str();
 	//PDL_Err mjErr = PDL_CallJS("returnVerses", params, 2);
+	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
+    return PDL_TRUE;
+}
+
+PDL_bool getStrong(PDL_JSParameters *parms) {
+	/*Get verses from a specific module (e.g. "ESV"). Set your biblepassage in key e.g. "James 1:19" */
+	const char* moduleName = PDL_GetJSParamString(parms, 0);
+	const char* key = PDL_GetJSParamString(parms, 1);
+
+	std::stringstream out;
+
+	SWModule *module = displayLibrary->getModule(moduleName);
+	module->setKey(key);
+
+	if (strcmp(module->RenderText(), "") != 0) {
+		out << convertString(module->RenderText());
+	}
+
+	const std::string& tmp = out.str();
+
 	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
     return PDL_TRUE;
 }
@@ -1149,6 +1185,7 @@ int main () {
     // register the js callback
     PDL_RegisterJSHandler("getModules", getModules);
 	PDL_RegisterJSHandler("getVerses", getVerses);
+	PDL_RegisterJSHandler("getStrong", getStrong);
 	PDL_RegisterJSHandler("checkPlugin", checkPlugin);
 	PDL_RegisterJSHandler("getBooknames", getBooknames);
 	PDL_RegisterJSHandler("getVMax", getVMax);

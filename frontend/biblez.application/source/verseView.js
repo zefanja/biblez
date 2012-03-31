@@ -23,7 +23,8 @@ enyo.kind({
         onVerseTap: "",
         onShowNote: "",
         onShowFootnote: "",
-        onShowCrossRef: ""
+        onShowCrossRef: "",
+        onShowStrong: ""
     },
     components: [
             {kind: "ApplicationEvents", onWindowRotated: "windowRotated"},
@@ -140,12 +141,14 @@ enyo.kind({
                 this.currentFootnote = this.verses[parseInt(urlParams.passage.split(":")[1], 10)-1].footnotes[parseInt(urlParams.value, 10)-1];
             }
 
-
             //enyo.log(this.verses[parseInt(urlParams.passage.split(":")[1], 10)-1].footnotes[parseInt(urlParams.value, 10)-1]);
             if (urlParams.type === "n")
                 this.doShowFootnote();
             else if (urlParams.type === "x")
                 this.doShowCrossRef(this.currentFootnote);
+        } else if (urlParams.action == "showStrongs") {
+            //enyo.log(urlParams.id, urlParams.type, urlParams.value);
+            this.doShowStrong(urlParams.id, urlParams.type, urlParams.value);
         }
     },
 

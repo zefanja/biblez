@@ -200,6 +200,11 @@ a {
     line-height: 10px;
 }
 
+.verse-strong {
+    font-size: 0.8em;
+    vertical-align: super;
+}
+
 .verse-heading {
     font-weight: bold;
     font-size: 1.1em;

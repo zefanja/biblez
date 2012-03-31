@@ -77,7 +77,8 @@ enyo.kind({
                 onVerseTap: "handleVerseTap",
                 onShowNote: "openShowNote",
                 onShowFootnote: "openFootnote",
-                onShowCrossRef: "openCrossRef"
+                onShowCrossRef: "openCrossRef",
+                onShowStrong: "handleStrong"
             },
             {name: "stuffView", style: "padding: 10px;", kind: "App.Stuff", view: "split",
                 onVerse: "handleStuffVerse",
@@ -98,7 +99,8 @@ enyo.kind({
         onWelcome: "",
         onSync: "",
         onSplitVerse: "",
-        onSearch: ""
+        onSearch: "",
+        onGetStrong: ""
     },
     published: {
         currentModule: null,
@@ -112,6 +114,7 @@ enyo.kind({
 
     btWidth: 0,
     currentCrossRef: false,
+    currentStrong: null,
 
     create: function () {
         this.inherited(arguments);
@@ -213,17 +216,22 @@ enyo.kind({
         this.getVerses();
     },
 
-    getVerses: function (passage, verse, single) {
+    getVerses: function (passage, verse) {
         if (!passage)
             passage = this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter();
         if (verse)
             this.$.selector.setVerse(verse);
-        if (!single)
-            single = false;
-        //enyo.log(this.$.pane.getViewName());
+
         if (this.$.pane.getViewName() === "verseView")
-            this.doGetVerses(passage, this.currentModule.name, single);
-        //this.$.swordApi.getVerses(passage, this.currentModule.name);
+            this.doGetVerses(passage, this.currentModule.name);
+    },
+
+    getStrong: function (type, value) {
+        if (type === "Hebrew") {
+            this.doGetStrong(value, "StrongsHebrew");
+        } else {
+            this.doGetStrong(value, "StrongsGreek");
+        }
     },
 
     handleGetVerses: function (response) {
@@ -686,6 +694,20 @@ enyo.kind({
         //this.$.selector.setVerse(1);
         this.currentCrossRef = {top: inSender.top, left: inSender.left};
         this.getVerses(inSender.passage, false, true);
+    },
+
+    handleStrong: function (inSender, id, type, value) {
+        //enyo.log(id, type, value);
+        this.currentStrong = {type: type, value: value, top: enyo.byId(id).getBoundingClientRect().top, left: enyo.byId(id).getBoundingClientRect().left};
+        this.getStrong(type, value);
+    },
+
+    handleGetStrong: function (response) {
+        //enyo.log(response);
+        this.$.noteView.setNote(response.replace(/\\u000a/g, "<br />"));
+        this.$.noteView.setCaption(this.currentStrong.type + ": " + this.currentStrong.value);
+        this.$.noteView.openAt({top: this.currentStrong.top, left: this.currentStrong.left}, true);
+        this.$.noteView.setShowType("footnote");
     },
 
     //PANE STUFF

@@ -46,6 +46,7 @@ enyo.kind({
                     onGetModules: "handleGetModules",
                     onGetBooknames: "handleGetBooknames",
                     onGetVerses: "handleGetVerses",
+                    onGetStrong: "handleGetStrong",
                     onGoToMain: "goToMainView",
                     onWelcome: "goToWelcome",
                     onGetVMax: "handleGetVMax",
@@ -57,6 +58,7 @@ enyo.kind({
                         onGetModules: "handleGetModules",
                         onGetBooknames: "handleGetBooknames",
                         onGetVerses: "handleGetVerses",
+                        onGetStrong: "handleGetStrong",
                         onGoToMain: "goToMainView",
                         onWelcome: "goToWelcome",
                         onGetVMax: "handleGetVMax",
@@ -131,9 +133,14 @@ enyo.kind({
         this.$.swordApi.getBooknames(enyo.bind(inSender, inSender.handleGetBooknames), module);
     },
 
-    handleGetVerses: function (inSender, passage, module, single) {
+    handleGetVerses: function (inSender, passage, module) {
         //enyo.log(inSender, passage, module);
-        this.$.swordApi.getVerses(enyo.bind(inSender, inSender.handleGetVerses), passage, module, single);
+        this.$.swordApi.getVerses(enyo.bind(inSender, inSender.handleGetVerses), passage, module);
+    },
+
+    handleGetStrong: function (inSender, passage, module) {
+        //enyo.log(inSender, passage, module);
+        this.$.swordApi.getStrong(enyo.bind(inSender, inSender.handleGetStrong), module, passage);
     },
 
     handleGetVMax: function (inSender, passage) {

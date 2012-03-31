@@ -120,6 +120,12 @@ enyo.kind({
         }*/
     },
 
+    getStrong: function(inCallback, module, passage) {
+        //enyo.log(passage, module);
+        try {var status = this.$.sword.callPluginMethodDeferred(inCallback, "getStrong", module, passage);}
+        catch (e) {this.showError("Plugin exception: " + e);}
+    },
+
     handleGetVerses: function (verses, passage) {
         this.doGetVerses(enyo.json.parse(verses), enyo.json.parse(passage));
     },
@@ -424,8 +430,8 @@ var api = {
     getModules: function (lang, inCallback) {
         var modules = [];
         try {
-            //var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND modType = 'texts' ORDER BY modType, modName ASC;";
-            var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND (modType = 'texts' OR modType = 'comments') ORDER BY modType DESC, modName ASC;";
+            var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' ORDER BY modType DESC, modName ASC;";
+            //var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND (modType = 'texts' OR modType = 'comments') ORDER BY modType DESC, modName ASC;";
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sql, [],
@@ -814,13 +820,14 @@ var api = {
         var findBreak = "";
         var content = "";
         var tmpVerse = "";
-        var tmpMatch = 0;
+        var tmpMatch = null;
         var noteID = (view == "split") ? "noteIconSplit" : "noteIcon";
         var bmID = (view == "split") ? "bmIconSplit" : "bmIcon";
         var verseID = (view == "split") ? "verseSplit" : "verse";
         var vnID = (view == "split") ? "vnSplit" : "vn";
         var fnID = (view == "split") ? "footnoteSplit" : "footnote";
         var crossID = (view == "split") ? "crossRefSplit" : "crossRef";
+        var strongID = (view == "split") ? "strongSplit" : "strong";
         var notes = [];
 
         for (var i=0; i<verses.length; i++) {
@@ -845,7 +852,17 @@ var api = {
                 }
             }
 
-            //enyo.log(verses[i].vnumber, tmpVerse);
+            //enyo.log(tmpVerse);
+
+            tmpMatch = tmpVerse.match(/<small><em[^>]*>\&lt;<a[^>]*>\d+<\/a>\&gt;<\/em><\/small>/g);
+            if (tmpMatch) {
+                for (var k=0; k<tmpMatch.length; k++) {
+                    if (!biblez.strongs || plain)
+                        tmpVerse = tmpVerse.replace(/<small><em[^>]*>\&lt;<a[^>]*>\d+<\/a>\&gt;<\/em><\/small>/g, "");
+                    else
+                        tmpVerse = tmpVerse.replace(tmpMatch[k], "<span class='verse-strong' id='" + strongID + verses[i].vnumber + "-" + k + "'>" + tmpMatch[k].replace("passagestudy.jsp?", "passagestudy.jsp?id=" + strongID + verses[i].vnumber + "-" + k + "&") + "</span>");
+                }
+            }
 
             if (tmpVerse.search("<br /><br />") != -1) {
                 findBreak = "<br /><br />";
