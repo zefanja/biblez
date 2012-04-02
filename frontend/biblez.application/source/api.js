@@ -430,8 +430,8 @@ var api = {
     getModules: function (lang, inCallback) {
         var modules = [];
         try {
-            var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' ORDER BY modType DESC, modName ASC;";
-            //var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND (modType = 'texts' OR modType = 'comments') ORDER BY modType DESC, modName ASC;";
+            //var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' ORDER BY modType DESC, modName ASC;";
+            var sql = "SELECT * FROM modules WHERE lang = '" + lang + "' AND (modType = 'texts' OR modType = 'comments' OR modType = 'lexdict') ORDER BY modType DESC, modName ASC;";
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sql, [],
@@ -703,13 +703,18 @@ var api = {
         }
     },
 
-    getHighlights: function(bnumber, cnumber, inCallback) {
+    getHighlights: function(bnumber, cnumber, inCallback, colors) {
         //enyo.log("NOTES: ", bnumber, cnumber);
         var hl = [];
+        var tmpSql = "";
+        if (colors) {
+            for (var i=0; i<colors.length; i++) {
+                tmpSql += (tmpSql === "") ? " WHERE color = '" + colors[i] + "'" : " OR color = '" + colors[i] + "'";
+            }
+        }
         try {
-            var sql = (parseInt(bnumber, 10) !== -1 && parseInt(cnumber, 10) !== -1) ? "SELECT * FROM highlights WHERE bnumber = '" + bnumber + "' AND cnumber = '" + cnumber + "' ORDER BY vnumber ASC;" : "SELECT * FROM highlights ORDER BY bnumber, cnumber, vnumber ASC;";
+            var sql = (parseInt(bnumber, 10) !== -1 && parseInt(cnumber, 10) !== -1) ? "SELECT * FROM highlights WHERE bnumber = '" + bnumber + "' AND cnumber = '" + cnumber + "' ORDER BY vnumber ASC;" : "SELECT * FROM highlights " + tmpSql + " ORDER BY bnumber, cnumber, vnumber ASC;";
             //enyo.log(sql);
-            //var sql = "SELECT * FROM notes;";
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {
                     transaction.executeSql(sql, [],
@@ -891,7 +896,7 @@ var api = {
                 content = content + "<br>";
             }
         }
-        //enyo.log(content);
+
         return content;
     },
 
@@ -911,6 +916,17 @@ var api = {
             return params;
         }
 
+    },
+
+    getRealPosition: function (o) {
+        var z=o, x=0,y=0, c;
+        while(z && !isNaN(z.offsetLeft) && !isNaN(z.offsetTop)) {
+            c = isNaN(window.globalStorage)? 0: window.getComputedStyle(z,null);
+            x += z.offsetLeft-z.scrollLeft+(c?parseInt(c.getPropertyValue('border-left-width'),10):0);
+            y += z.offsetTop-z.scrollTop+(c?parseInt(c.getPropertyValue('border-top-width'),10):0);
+            z = z.offsetParent;
+        }
+        return {x:o.X=x,y:o.Y=y};
     },
 
     //MISC//

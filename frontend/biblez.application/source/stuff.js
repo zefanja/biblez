@@ -231,6 +231,14 @@ enyo.kind({
 
                 //HIGHLIGHTS VIEW
                 {name: "highlightsView", components: [
+                    {kind: "HFlexBox", style: "margin-bottom: 10px;", components: [
+                        {name: "btRed", kind: "Button", toggling: true, caption: " ", flex: 1, onclick: "getHighlights", className: "color-button", color: "rgba(255,99,71,0.5)", style: "background-color: red;"},
+                        {name: "btBlue", kind: "Button", toggling: true, caption: " ", flex: 1, onclick: "getHighlights", className: "color-button", color: "rgba(135,206,250,0.5)", style: "background-color: blue;"},
+                        {name: "btYellow", kind: "Button", toggling: true, caption: " ", flex: 1, onclick: "getHighlights", className: "color-button", color: "rgba(255,255,0,0.5)", style: "background-color: yellow;"},
+                        {name: "btGreen", kind: "Button", toggling: true, caption: " ", flex: 1, onclick: "getHighlights", className: "color-button", color: "rgba(152,251,152,0.5)", style: "background-color: green;"},
+                        {name: "btViolet", kind: "Button", toggling: true, caption: " ", flex: 1, onclick: "getHighlights", className: "color-button", color: "rgba(238,130,238,0.5)", style: "background-color: violet;"},
+                        {name: "btOrange", kind: "Button", toggling: true, caption: " ", flex: 1, onclick: "getHighlights", className: "color-button", color: "rgba(255,165,0,0.5)", style: "background-color: orange;"}
+                    ]},
                     {kind: "VFlexBox", className: "popup-scroller-container", height: "100%", components: [
                         {kind: "Scroller", className: "popup-scroller", flex: 1, components: [
                             {name: "hlHint", showing: false, content: $L("No Highlights available. Tap on a verse number to add one!"), className: "hint"},
@@ -540,10 +548,23 @@ enyo.kind({
 
     //HIGHLIGHTS VIEW
 
-    getHighlights: function () {
-        //enyo.log("GET HIGHLIGHTS...");
-        //this.$.spinner.show();
-        api.getHighlights(-1,-1,enyo.bind(this, this.handleHighlights));
+    getHighlights: function (inSender, inEvent) {
+        var colors = [];
+
+        if (this.$.btRed.depressed)
+            colors.push(this.$.btRed.color);
+        if (this.$.btBlue.depressed)
+            colors.push(this.$.btBlue.color);
+        if (this.$.btYellow.depressed)
+            colors.push(this.$.btYellow.color);
+        if (this.$.btGreen.depressed)
+            colors.push(this.$.btGreen.color);
+        if (this.$.btViolet.depressed)
+            colors.push(this.$.btViolet.color);
+        if (this.$.btOrange.depressed)
+            colors.push(this.$.btOrange.color);
+
+        api.getHighlights(-1,-1,enyo.bind(this, this.handleHighlights), colors);
     },
 
     handleHighlights: function (hl) {
@@ -829,7 +850,9 @@ enyo.kind({
             break;
         }
         this.doVerse();
-        biblez.isOpen = false;
-        this.doCancel();
+        if (this.view === "popup") {
+            biblez.isOpen = false;
+            this.doCancel();
+        }
     }
 });

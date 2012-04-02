@@ -233,9 +233,6 @@ enyo.kind({
     },
 
     setSnappers: function (vnumber, resize) {
-        //enyo.log(vnumber);
-        //this.inherited(arguments);
-        //enyo.log("Resize VerseView", vnumber, resize, this.$.verseSnapper.getIndex(), this.view);
         if (!biblez.isOpen || resize) {
             var comp = this.$.verseSnapper.getComponents();
             for (var i=0;i<comp.length;i++) {
@@ -253,9 +250,6 @@ enyo.kind({
             this.$.view.addStyles("height: " + height + "px;");
             this.$.view.addStyles("width: " + width + "px;");
 
-            //enyo.log(height, width);
-            //enyo.log(this.$.mainScroller.node.scrollWidth,this.$.mainScroller.node.clientWidth, parseInt((this.$.mainScroller.node.scrollWidth - this.$.mainScroller.node.clientWidth) / this.$.mainScroller.node.clientWidth, 10)+1);
-
             this.numberOfSnappers = (this.$.mainScroller.node.scrollWidth > this.$.mainScroller.node.clientWidth) ? parseInt((this.$.mainScroller.node.scrollWidth - this.$.mainScroller.node.clientWidth) / this.$.mainScroller.node.clientWidth, 10)+1 : 0;
             //enyo.log(this.numberOfSnappers);
             this.$.firstSnapper.addStyles("width: " + this.$.viewContainer.node.clientWidth + "px;");
@@ -270,12 +264,14 @@ enyo.kind({
 
             if (vnumber && vnumber != -1) {
                 var verseID = (this.view === "main") ? "vn" : "vnSplit";
+                //enyo.log(api.getRealPosition(enyo.byId(verseID + enyo.json.stringify(vnumber))));
+                //enyo.log(enyo.json.stringify(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect()), enyo.json.stringify(enyo.byId(verseID + enyo.json.stringify(vnumber)).getClientRects()));
                 if (enyo.byId(verseID + enyo.json.stringify(vnumber))) {
+                    var realPos = api.getRealPosition(enyo.byId(verseID + enyo.json.stringify(vnumber)));
                     if (biblez.scrollHorizontal) {
-                        //enyo.log(typeof vnumber, vnumber, enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left, this.$.viewContainer.node.clientWidth);
                         this.$.verseSnapper.setIndex((this.view === "main") ? parseInt(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left / this.$.viewContainer.node.clientWidth, 10) + 1 : parseInt((enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().left - (window.innerWidth - this.$.viewContainer.node.clientWidth)) / this.$.viewContainer.node.clientWidth, 10) + 1);
                     } else {
-                        this.$.mainScroller.scrollIntoView(parseInt(enyo.byId(verseID + enyo.json.stringify(vnumber)).getBoundingClientRect().top, 10), 0);
+                        this.$.mainScroller.scrollIntoView(realPos.y-150, 0);
                     }
                 } else {
                     this.verseSnapper.setIndex(1);

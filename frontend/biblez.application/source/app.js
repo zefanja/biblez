@@ -18,6 +18,7 @@ enyo.kind({
     kind: enyo.VFlexBox,
     components: [
         {kind: "ApplicationEvents", onUnload: "saveSettings"},
+        {kind: "ApplicationEvents", onWindowParamsChange: "launchParamsChanged"},
         {kind: "PalmService", service: "palm://com.palm.applicationManager/", method: "open"},
         {name: "swordApi", kind: "BibleZ.SwordApi",
             onGetSyncConfig: "handleGetSyncConfig",
@@ -31,7 +32,7 @@ enyo.kind({
         {kind: "AppMenu", components: [
             {caption: $L("Module Manager"), onclick: "openModuleMgr"},
             {caption: $L("Preferences"), onclick: "openPrefs"},
-            {caption: $L("Disable Auto Dimm"), onclick: "setDimm", dimm: true},
+            {caption: $L("Disable Auto Dim"), onclick: "setDim", dim: true},
             {caption: $L("Help"), onclick: "openHelp"},
             {caption: $L("Leave A Review"), onclick: "openReview"},
             {caption: $L("About"), onclick: "openAbout"}
@@ -118,6 +119,14 @@ enyo.kind({
             this.$.splitView.setCurrentModule(enyo.json.parse(enyo.getCookie("splitModule")));
     },
 
+    //JUST TYPE
+    launchParamsChanged: function(inSender){
+        if (enyo.windowParams.search) {
+            //enyo.log(enyo.windowParams.search);
+            this.$.mainView.getVerses(decodeURIComponent(enyo.windowParams.search));
+        }
+    },
+
     //SWORD API CALLS
 
     handleGetModules: function (inSender) {
@@ -133,9 +142,9 @@ enyo.kind({
         this.$.swordApi.getBooknames(enyo.bind(inSender, inSender.handleGetBooknames), module);
     },
 
-    handleGetVerses: function (inSender, passage, module) {
+    handleGetVerses: function (inSender, passage, module, single) {
         //enyo.log(inSender, passage, module);
-        this.$.swordApi.getVerses(enyo.bind(inSender, inSender.handleGetVerses), passage, module);
+        this.$.swordApi.getVerses(enyo.bind(inSender, inSender.handleGetVerses), passage, module, single);
     },
 
     handleGetStrong: function (inSender, passage, module) {
@@ -338,14 +347,14 @@ enyo.kind({
         this.$.mainPane.selectViewByName("prefs");
     },
 
-    setDimm: function (inSender, inEvent) {
-        if (inSender.dimm) {
-            inSender.setCaption($L("Enable Auto Dimm"));
-            inSender.dimm = false;
+    setDim: function (inSender, inEvent) {
+        if (inSender.dim) {
+            inSender.setCaption($L("Enable Auto Dim"));
+            inSender.dim = false;
             enyo.windows.setWindowProperties(window, {blockScreenTimeout: true});
         } else {
-            inSender.setCaption($L("Disable Auto Dimm"));
-            inSender.dimm = true;
+            inSender.setCaption($L("Disable Auto Dim"));
+            inSender.dim = true;
             enyo.windows.setWindowProperties(window, {blockScreenTimeout: false});
         }
     },

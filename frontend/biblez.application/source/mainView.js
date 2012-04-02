@@ -169,14 +169,24 @@ enyo.kind({
         //enyo.log(modules);
         modules = enyo.json.parse(modules);
         biblez.modules = modules;
+        var tmpMods = [];
         if(modules.length !== 0) {
-            if(!this.currentModule)
-                this.currentModule = modules[0];
+            for (var i=0;i<modules.length;i++) {
+                if (modules[i].modType === "Biblical Texts" || modules[i].modType === "Commentaries")
+                    tmpMods.push(modules[i]);
+            }
 
-            this.$.library.setCurrentModule(this.currentModule);
-            this.$.library.setModules(modules);
-            this.$.btModule.setCaption(this.currentModule.name);
-            this.doGetBooknames(this.currentModule.name);
+            if (tmpMods.length !== 0) {
+                if(!this.currentModule)
+                    this.currentModule = tmpMods[0];
+
+                this.$.library.setCurrentModule(this.currentModule);
+                this.$.library.setModules(tmpMods);
+                this.$.btModule.setCaption(this.currentModule.name);
+                this.doGetBooknames(this.currentModule.name);
+            } else {
+                this.doWelcome();
+            }
         } else {
             this.doWelcome();
         }
@@ -216,14 +226,14 @@ enyo.kind({
         this.getVerses();
     },
 
-    getVerses: function (passage, verse) {
+    getVerses: function (passage, verse, single) {
         if (!passage)
             passage = this.$.selector.getBook().abbrev + " " + this.$.selector.getChapter();
         if (verse)
             this.$.selector.setVerse(verse);
 
         if (this.$.pane.getViewName() === "verseView")
-            this.doGetVerses(passage, this.currentModule.name);
+            this.doGetVerses(passage, this.currentModule.name, single);
     },
 
     getStrong: function (type, value) {

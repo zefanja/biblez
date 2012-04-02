@@ -623,16 +623,18 @@ PDL_bool getModules(PDL_JSParameters *parms) {
 				modules << "\"descr\": \"" << convertString(module->Description()) << "\"}";
 			}
 		} else {
-			if (it != displayLibrary->Modules.begin()) {
-				modules << ", ";
-			}
-			modules << "{\"name\": \"" << module->Name() << "\", ";
-			modules << "\"modType\":\"" << module->Type() << "\", ";
-			if (module->getConfigEntry("Lang")) {
-				modules << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
-			}
-			modules << "\"dataPath\":\"" << module->getConfigEntry("DataPath") << "\", ";
-			modules << "\"descr\": \"" << convertString(module->Description()) << "\"}";
+			//if (strcmp(module->Type(), "Biblical Texts") == 0 || strcmp(module->Type(), "Commentaries") == 0) {
+				if (it != displayLibrary->Modules.begin()) {
+					modules << ", ";
+				}
+				modules << "{\"name\": \"" << module->Name() << "\", ";
+				modules << "\"modType\":\"" << module->Type() << "\", ";
+				if (module->getConfigEntry("Lang")) {
+					modules << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
+				}
+				modules << "\"dataPath\":\"" << module->getConfigEntry("DataPath") << "\", ";
+				modules << "\"descr\": \"" << convertString(module->Description()) << "\"}";
+			//}
 		}
 	}
 
@@ -650,15 +652,15 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	/*Get verses from a specific module (e.g. "ESV"). Set your biblepassage in key e.g. "James 1:19" */
 	const char* moduleName = PDL_GetJSParamString(parms, 0);
 	const char* key = PDL_GetJSParamString(parms, 1);
-	//const char* single = PDL_GetJSParamString(parms, 2);
+	const char* single = PDL_GetJSParamString(parms, 2);
 	//const char* side = PDL_GetJSParamString(parms, 2);
 	std::stringstream passage;
 	std::stringstream tmpPassage;
 	std::stringstream out;
 
 	SWModule *module = displayLibrary->getModule(moduleName);
-	if (!module || (strcmp(module->Type(), "Lexicons / Dictionaries") == 0 || strcmp(module->Type(), "Generic Books") == 0)) {
-		PDL_JSException(parms, "getVerses: Module isn't verse driven (no bible or commentary)");
+	if (!module || !(strcmp(module->Type(), "Biblical Texts") == 0 || strcmp(module->Type(), "Commentaries") == 0)) {
+		PDL_JSException(parms, "getVerses: Module isn't verse driven (no bible or commentary). Currently BibleZ HD doesn't support Generic Books and Lexicons / Dictionaries!");
 		return PDL_TRUE;
 	}
 
@@ -667,13 +669,15 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 	VerseKey *vk = (VerseKey*)module->getKey();
 	vk->Headings(true);
 
+	ListKey verses = VerseKey().ParseVerseList(key, "", true);
+
 	passage << "{\"bookName\": \"" << vk->getBookName() << "\", \"cnumber\": \"" << vk->Chapter()  << "\", \"vnumber\": \"" << vk->Verse() << "\", \"passageSingle\" : \"" << vk->getBookName() << " " << vk->Chapter() << ":" << vk->Verse() << "\", \"passage\" : \"" << vk->getBookName() << " " << vk->Chapter() << "\", \"abbrev\": \"" << vk->getBookAbbrev() << "\"}";
-	/*if (strcmp(single, "true") == 0) {
-		tmpPassage << vk->getBookName() << " " << vk->Chapter() << ":" << vk->Verse();
+	if (strcmp(single, "true") == 0) {
+		verses = VerseKey().ParseVerseList(key, "", true);
 	} else {
 		tmpPassage << vk->getBookName() << " " << vk->Chapter();
-	}*/
-	ListKey verses = VerseKey().ParseVerseList(key, "", true); //tmpPassage.str().c_str()
+		verses = VerseKey().ParseVerseList(tmpPassage.str().c_str(), "", true);
+	}
 
 	AttributeTypeList::iterator i1;
 	AttributeList::iterator i2;
@@ -709,7 +713,7 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 						}
 					}
 					out << "]";
-				} else if (strcmp(i1->first, "Word") == 0) {
+				} /*else if (strcmp(i1->first, "Word") == 0) {
 					out << ", \"words\": [";
 					for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++) {
 						out << "{";
@@ -725,7 +729,7 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 						}
 					}
 					out << "]";
-				}
+				} */
 			}
 
 			if (vk->Chapter() == 1 && vk->Verse() == 1) {
