@@ -693,7 +693,7 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 			out << "{\"content\": \"" << convertString(module->RenderText()) << "\", ";
 			out << "\"vnumber\": \"" << vk->Verse() << "\", ";
 			out << "\"cnumber\": \"" << vk->Chapter() << "\"";
-			out << ", \"heading\": \"" << module->getEntryAttributes()["Heading"]["Preverse"]["0"].c_str() << "\"";
+			out << ", \"heading\": \"" << convertString(module->getEntryAttributes()["Heading"]["Preverse"]["0"].c_str()) << "\"";
 
 			for (i1 = module->getEntryAttributes().begin(); i1 != module->getEntryAttributes().end(); i1++) {
 				if (strcmp(i1->first, "Footnote") == 0) {

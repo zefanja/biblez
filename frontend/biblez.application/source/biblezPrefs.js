@@ -105,11 +105,9 @@ enyo.kind({
 
     create: function () {
         this.inherited(arguments);
-        enyo.log("Scrolling: ", enyo.getCookie("scrolling"));
         if (enyo.getCookie("scrolling")) {
             biblez.scrollHorizontal = enyo.json.parse(enyo.getCookie("scrolling"));
             this.$.toggleScroll.setState(biblez.scrollHorizontal);
-
         }
 
         if (enyo.getCookie("linebreak")) {

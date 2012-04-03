@@ -835,6 +835,8 @@ var api = {
         var strongID = (view == "split") ? "strongSplit" : "strong";
         var notes = [];
 
+        var highlight = (view === "main") ? biblez.highlightVerse : biblez.highlightSplitVerse;
+
         for (var i=0; i<verses.length; i++) {
             //.replace(/\*x/g,"")
             tmpVerse = verses[i].content.replace(/color=\u0022red\u0022/g,"color=\u0022#E60000\u0022");
@@ -887,7 +889,7 @@ var api = {
             }
             content = content + "<a href='verse://" + verses[i].vnumber + "'>";
             content = content + " <span id='" + vnID + verses[i].vnumber + "' class='verse-number'>" + verses[i].vnumber + "</span> </a>";
-            content = (parseInt(vnumber, 10) != 1 && parseInt(vnumber, 10) == parseInt(verses[i].vnumber, 10)) ? content + "<span id='" + verseID + verses[i].vnumber +  "' class='verse-highlighted'>" + tmpVerse + "</span>" : content + "<span id='" + verseID + verses[i].vnumber +  "'>" + tmpVerse + "</span>";
+            content = (highlight && parseInt(vnumber, 10) == parseInt(verses[i].vnumber, 10)) ? content + "<span id='" + verseID + verses[i].vnumber +  "' class='verse-highlighted'>" + tmpVerse + "</span>" : content + "<span id='" + verseID + verses[i].vnumber +  "'>" + tmpVerse + "</span>";
             content = content + " <span id='" + noteID + verses[i].vnumber + "'></span> ";
             content = content + " <span id='" + bmID + verses[i].vnumber + "'></span> ";
             content = content + findBreak;

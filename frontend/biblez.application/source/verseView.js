@@ -281,10 +281,7 @@ enyo.kind({
                 this.vnumber = 1;
                 this.doChangeVnumber(this.vnumber);
             } else if (resize) {
-                this.$.verseSnapper.setIndex(this.$.verseSnapper.getIndex());
-            } else {
-                //this.$.verseSnapper.setIndex(1);
-                //this.$.verseSnapper.setIndex(this.$.verseSnapper.getIndex());
+                this.$.verseSnapper.setIndex((this.$.verseSnapper.getIndex() > this.numberOfSnappers) ? this.numberOfSnappers+1 : this.$.verseSnapper.getIndex());
             }
 
             this.setPrev();

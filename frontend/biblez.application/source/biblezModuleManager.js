@@ -59,6 +59,7 @@ enyo.kind({
 		]},
         {name: "errorDialog", kind: "BibleZ.Error"},
         {name: "reposPopup", kind: "BibleZ.Repos", onAccept: "doGetSync", onSelectRepo: "callRefreshSource", onDenied: "doBack"},
+        {name: "warningPopup", kind: "BibleZ.Warning", onAccept: "handleAccept"},
 		{name: "slidingPane", kind: "SlidingPane", flex: 1, components: [
 			{name: "left", width: "320px", kind:"SlidingView", components: [
                 {name: "scrollerLeft", kind: "Scroller", flex: 1, components: [
@@ -195,16 +196,22 @@ enyo.kind({
     },
 
 	downloadAddIn: function () {
-		this.$.btInstall.setPosition(0);
-		this.$.btInstallCaption.setContent($L("Installing..."));
-		/* url = "http://www.crosswire.org/ftpmirror/pub/sword/packages/rawzip/" + this.moduleToInstall + ".zip";
-		console.log(url);
-		this.$.DownloadMgr.call({target: url, targetDir: "/media/internal/.sword/install"});
-        this.$.btInstall.setCaption($L("Installing..."));
-        this.$.btInstall.setActive(true);
-        this.$.btInstall.setDisabled(true); */
-        this.doInstallModule();
+		if (!this.$.warningPopup.getConfirmed()) {
+            this.$.warningPopup.openAtCenter();
+        } else {
+            this.$.btInstall.setPosition(0);
+            this.$.btInstallCaption.setContent($L("Installing..."));
+            this.doInstallModule();
+        }
+
 	},
+
+    handleAccept: function (inSender, inEvent) {
+        this.$.warningPopup.close();
+        this.$.btInstall.setPosition(0);
+        this.$.btInstallCaption.setContent($L("Installing..."));
+        this.doInstallModule();
+    },
 
     updateStatus: function (inSender, inResponse) {
         this.log("STATUS", enyo.json.stringify(inResponse));
@@ -271,7 +278,7 @@ enyo.kind({
 			this.$.langName.setContent((languages[r]) ? (languages[r]) : r);
 
 			var isRowSelected = (inIndex == this.lastLangItem);
-			this.$.itemLang.applyStyle("background", isRowSelected ? "#3A8BCB" : null);
+			this.$.itemLang.applyStyle("background", isRowSelected ? "#9dc5e5" : null);
             return true;
         } else {
             return false;
@@ -310,7 +317,7 @@ enyo.kind({
                 this.$.modDivider.hide();
             }
 			var isRowSelected = (inIndex == this.lastModItem);
-			this.$.itemMod.applyStyle("background", isRowSelected ? "#3A8BCB" : null);
+			this.$.itemMod.applyStyle("background", isRowSelected ? "#9dc5e5" : null);
             return true;
         } else {
             return false;

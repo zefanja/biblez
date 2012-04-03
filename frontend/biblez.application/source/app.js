@@ -333,7 +333,6 @@ enyo.kind({
     },
 
     handleSplitVerse: function (inSender, verse, passage) {
-        //enyo.log(verse, passage);
         this.$.mainView.getVerses(passage, verse);
     },
 

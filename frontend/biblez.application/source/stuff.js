@@ -157,7 +157,7 @@ enyo.kind({
             {name: "stuffHeader", kind: "HFlexBox", align: "center", style: "margin-bottom: 10px;", components: [
                 {kind: "Button", caption: $L("Back"), onclick: "goBack"},
                 {kind: "Spacer"},
-                {name: "headerTitle", content: $L("Personal")}
+                {name: "headerTitle", content: $L("Personal"), style: "margin-left: 10px;"}
             ]},
             {name: "stuffPane", kind: "Pane", flex: 1, transitionKind: "enyo.transitions.Simple", onSelectView: "viewSelected", components: [
                 //START VIEW
@@ -243,8 +243,9 @@ enyo.kind({
                         {kind: "Scroller", className: "popup-scroller", flex: 1, components: [
                             {name: "hlHint", showing: false, content: $L("No Highlights available. Tap on a verse number to add one!"), className: "hint"},
                             {name: "hlList", kind: "VirtualRepeater", onSetupRow: "getHlListItem", components: [
-                                {name: "itemHl", kind: "SwipeableItem", onConfirm: "deleteHighlight", layoutKind: "VFlexLayout", tapHighlight: false, className: "list-item", components: [
-                                    {name: "hlPassage"}
+                                {name: "itemHl", kind: "SwipeableItem", onConfirm: "deleteHighlight", layoutKind: "HFlexLayout", tapHighlight: false, className: "list-item", components: [
+                                    {name: "hlPassage", flex: 1},
+                                    {name: "hlColor", content: " ", className: "hl-color"}
                                 ],
                                 onclick: "goToVerse"
                                 }]
@@ -411,9 +412,8 @@ enyo.kind({
     //BOOKMARKS VIEW
 
     getBookmarks: function (searchTerm) {
-        //this.$.spinner.show();
-        if (searchTerm) {
-            api.getBookmarks(-1,-1,enyo.bind(this, this.handleBookmarks), searchTerm);
+        if (searchTerm || this.$.bmSearch.getValue() !== "") {
+            api.getBookmarks(-1,-1,enyo.bind(this, this.handleBookmarks), (searchTerm) ? searchTerm : this.$.bmSearch.getValue());
         } else {
             api.getBookmarks(-1,-1,enyo.bind(this, this.handleBookmarks));
         }
@@ -441,10 +441,11 @@ enyo.kind({
                 }
                 if (r.folder !== "") {this.$.bmFolder.setContent("<img src='images/folder_brown.png' class='sidebar-icon'/> " + r.folder);}
                 if (r.tags !== "") {this.$.bmTags.setContent("<img src='images/tags.png' class='sidebar-icon'/> " + r.tags);}
+
+                //var isRowSelected = (inIndex == this.tappedItem);
+                //this.$.itemBm.applyStyle("background", isRowSelected ? "#9dc5e5" : null);
             }
 
-            //var isRowSelected = (inIndex == this.tappedItem);
-            //this.$.itemBm.applyStyle("background", isRowSelected ? "#9dc5e5" : null);
             return true;
         } else {
             return false;
@@ -457,6 +458,7 @@ enyo.kind({
     },
 
     filterBookmarks: function (inSender, inEvent) {
+
         this.getBookmarks(inSender.getValue().toLowerCase());
     },
 
@@ -464,8 +466,8 @@ enyo.kind({
 
     getNotes: function (searchTerm) {
         //this.$.spinner.show();
-        if (searchTerm) {
-            api.getNotes(-1,-1,enyo.bind(this, this.handleNotes), searchTerm);
+        if (searchTerm || this.$.noteSearch.getValue() !== "") {
+            api.getNotes(-1,-1,enyo.bind(this, this.handleNotes), (searchTerm) ? searchTerm : this.$.noteSearch.getValue());
         } else {
             api.getNotes(-1,-1,enyo.bind(this, this.handleNotes));
         }
@@ -585,7 +587,7 @@ enyo.kind({
         if (r) {
             if (biblez.bookNames[parseInt(r.bnumber, 10)]) {
                 this.$.hlPassage.setContent(biblez.bookNames[parseInt(r.bnumber, 10)].abbrev + " " + r.cnumber + ":" + r.vnumber);
-                this.$.itemHl.addStyles("background-color: " + r.color +";");
+                this.$.hlColor.addStyles("background-color: " + r.color +";");
             }
 
             //var isRowSelected = (inIndex == this.tappedItem);
@@ -621,8 +623,8 @@ enyo.kind({
         var r = this.results[inIndex];
         if (r) {
             this.$.searchPassage.setContent(r.passage);
-            var isRowSelected = (inIndex == this.tappedItem);
-            this.$.itemSearch.applyStyle("background", isRowSelected ? "#cde6f3" : null);
+            //var isRowSelected = (inIndex == this.tappedItem);
+            //this.$.itemSearch.applyStyle("background", isRowSelected ? "#cde6f3" : null);
             return true;
         } else {
             return false;

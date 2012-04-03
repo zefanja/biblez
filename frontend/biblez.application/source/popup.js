@@ -4,7 +4,6 @@ enyo.kind({
     kind: enyo.Popup,
     height: "700px",
     //className: "biblez-popup",
-    weight: "310px",
     contentHeight:"100%",
     published: {
         bookNames: [],
@@ -18,7 +17,7 @@ enyo.kind({
         onVerse: ""
     },
     components: [
-        {kind: "VFlexBox", width: "310px", height: "100%", components: [
+        {kind: "VFlexBox", width: "485px", height: "100%", components: [
             {kind: "RadioGroup", onChange: "radioButtonSelected", components: [
                 {name: "rgBook", caption: "", onclick: "changeSnapper"},
                 {name: "rgChapter", caption: "", onclick: "changeSnapper"},
@@ -258,6 +257,9 @@ enyo.kind({
                             name: kindName,
                             key: i}, {owner: this});
                     }
+                    if (i == 38) {
+                        this.$.bookSelector.createComponent({style: "clear: both;"}, {owner: this});
+                    }
                 }
                 this.$.bookSelector.render();
             break;
@@ -416,5 +418,54 @@ enyo.kind({
 
     resizeHandler: function () {
         this.setSize();
+    }
+});
+
+enyo.kind({
+    name: "BibleZ.Warning",
+    kind: "ModalDialog",
+    layoutKind:"VFlexLayout",
+    style: "min-width: 50%;",
+    lazy: false,
+    scrim: true,
+    events: {
+      onAccept: "",
+      onDenied: ""
+    },
+    published: {
+        confirmed: false
+    },
+    caption: $L("Warning"),
+    components:[
+        {kind: "BasicScroller", autoVertical: true, style: "height: auto;", flex: 1, components: [
+            {name: "warning", allowHtml: true, className: "popup-info", content: "Although Install Manager provides a convenient way for installing and upgrading SWORD components, it also uses a systematic method for accessing sites which gives packet sniffers a target to lock into for singling out users. <br><br>IF YOU LIVE IN A PERSECUTED COUNTRY AND DO NOT WISH TO RISK DETECTION, YOU SHOULD *NOT* USE INSTALL MANAGER'S REMOTE SOURCE FEATURES.<br><br>Also, Remote Sources other than CrossWire may contain less than quality modules, modules with unorthodox content, or even modules which are not legitimately distributable.  Many repositories contain wonderfully useful content.  These repositories simply are not reviewed or maintained by CrossWire and CrossWire cannot be held responsible for their content. CAVEAT EMPTOR.<br><br> If you understand this and are willing to enable remote source features then tap on 'Accept'"},
+            {kind: "HFlexBox", style: "border-top: 1px solid #333; margin: 10px; padding-top: 10px;", components: [
+                {kind: "CheckBox", onChange: "checkboxClicked"},
+                {content: $L("Don't show this again"), style: "padding-left: 10px;"}
+            ]}
+        ]},
+        {layoutKind: "HFlexLayout", style: "margin-top: 10px;", components: [
+            {name: "btCancel", kind: "Button", caption: $L("Close"), flex: 1, onclick: "closePopup"},
+            {name: "btAccept", kind: "Button", caption: $L("Accept"), flex: 1, onclick: "doAccept", className: "enyo-button-affirmative"}
+        ]}
+
+    ],
+
+    create: function () {
+        this.inherited(arguments);
+        //enyo.log("WARNING:", enyo.getCookie("showWarning"));
+        if (enyo.getCookie("showWarning")) {
+            this.confirmed = enyo.json.parse(enyo.getCookie("showWarning"));
+        }
+    },
+
+    checkboxClicked: function (inSender, inEvent) {
+        this.confirmed = inSender.getChecked();
+        enyo.setCookie("showWarning", enyo.json.stringify(inSender.getChecked()));
+    },
+
+    closePopup: function () {
+        this.close();
+        //this.doDenied();
     }
 });

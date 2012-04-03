@@ -80,6 +80,7 @@ a {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+    margin-left: 10px;
 }
 
 .header-button {
@@ -218,10 +219,6 @@ a {
     margin-bottom: 1em;
 }
 
-.module-item {
-
-}
-
 .chapter-table {
     display: table;
     width: 100%;
@@ -290,6 +287,12 @@ a {
     height: 11px;
 }
 
+.hl-color {
+    -webkit-border-radius: 5px;
+    width: 25px;
+    height: 25px;
+}
+
 /*POPUP LISTS */
 .biblez-popup {
     min-height: 300px;
@@ -346,9 +349,11 @@ a {
     /* border: 5px solid;
     -webkit-border-radius: 5px; */
     padding: .3em;
+    line-height: 35px;
     margin: 3px;
-    width: 40px;
-    font-size: .8em;
+    width: 45px;
+    height: 35px;
+    font-size: .9em;
     text-align: center;
     vertical-align: middle;
 }

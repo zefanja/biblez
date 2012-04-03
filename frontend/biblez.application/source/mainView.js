@@ -51,10 +51,10 @@ enyo.kind({
         ]},
 
         {name: "headerMain", kind: "Header", className: "view-header", components: [
+            {kind: "Button", name: "btBack", showing: false, caption: $L("Back"), onclick: "goBack", className: "header-button"},
             {name: "verseBox", kind: "HFlexBox", flex: 1, components: [
                 {kind: "Button", name: "btModule", caption: "Module", onclick: "openLibrary", className: "header-button"},
                 {kind: "IconButton", name: "btGo", icon: "images/book.png", onclick: "openSelector", className: "header-button"},
-                {kind: "Button", name: "btBack", showing: false, caption: $L("Back"), onclick: "goBack", className: "header-button"},
                 {name: "btHistory", kind: "IconButton", icon: "images/history.png", onclick: "openHistoryMenu", className: "header-button"}
             ]},
             {name: "passageBox", kind: "HFlexBox", flex: 1, components: [
@@ -62,12 +62,12 @@ enyo.kind({
             ]},
             {name: "personalBox", kind: "HFlexBox", flex: 1, components: [
                 {kind: "Spacer"},
-                {name: "stuffLabel", showing: false, content: $L("Personal"), className: "passage-label", flex: 1},
                 {name: "btSearch", kind: "IconButton", icon: "images/search.png", onclick: "openSearch", className: "header-button"},
                 {name: "btFont", kind: "IconButton", icon: "images/font.png", onclick: "openFontMenu", className: "header-button"},
                 {name: "btStuff", kind: "IconButton", icon: "images/sidebar.png", onclick: "openStuff", className: "header-button"}
             ]},
-            {name: "btAction", showing: false, kind: "IconButton", icon: "images/more.png", onclick: "openActionMenu", className: "header-button"}
+            {name: "btAction", showing: false, kind: "IconButton", icon: "images/more.png", onclick: "openActionMenu", className: "header-button"},
+            {name: "stuffLabel", showing: false, content: $L("Personal"), className: "passage-label", style: "text-align: right;", flex: 1}
         ]},
         {name: "pane", kind: "Pane", transitionKind: "enyo.transitions.Simple", onSelectView: "viewSelected", flex: 1, components: [
             {name: "verseView", kind: "App.VerseView", flex: 1,
@@ -223,6 +223,10 @@ enyo.kind({
     },
 
     handleOnVerse: function (inSender, inEvent) {
+        if (this.view === "main")
+            biblez.highlightVerse = true;
+        else
+            biblez.highlightSplitVerse = true;
         this.getVerses();
     },
 
@@ -245,6 +249,7 @@ enyo.kind({
     },
 
     handleGetVerses: function (response) {
+        //enyo.log(response);
         var tmpVerses = enyo.json.parse(response.split("<#split#>")[0]);
         var tmpPassage = enyo.json.parse(response.split("<#split#>")[1]);
         if (!this.currentCrossRef) {
@@ -305,6 +310,10 @@ enyo.kind({
     },
 
     handlePrevChapter: function (inSender, inEvent) {
+        if (this.view === "main")
+            biblez.highlightVerse = false;
+        else
+            biblez.highlightSplitVerse = false;
         var prev = this.$.selector.getPrevPassage();
         //enyo.log(prev);
         if (prev.prevBnumber === 0 && prev.prevChapter === 0) {
@@ -322,6 +331,10 @@ enyo.kind({
     },
 
     handleNextChapter: function(inSender, inEvent) {
+        if (this.view === "main")
+            biblez.highlightVerse = false;
+        else
+            biblez.highlightSplitVerse = false;
         var next = this.$.selector.getNextPassage();
         this.goPrev = false;
         if (next.nextBook !== "" && next.nextChapter !== 0) {
@@ -384,11 +397,19 @@ enyo.kind({
         } else {
             this.$.pane.selectViewByName("stuffView");
         }
+        if (this.$.btAction.showing)
+            this.$.btAction.hide();
     },
 
     handleStuffVerse: function (inSender, inEvent) {
         //enyo.log(this.$.noteBmSidebar.getPassage());
+        if (this.view === "main")
+            biblez.highlightVerse = true;
+        else
+            biblez.highlightSplitVerse = true;
+
         if (this.$.pane.getViewName() === "stuffView") {
+            biblez.highlightVerse = true;
             this.doSplitVerse(inSender.getVerse(), inSender.getPassage());
         } else {
             this.$.selector.setVerse(inSender.getVerse());
@@ -435,7 +456,7 @@ enyo.kind({
             if (inSender.getFont() == "greek") {
                 biblez.currentFont = biblez.greekFont;
             } else if (inSender.getFont() == "hebrew") {
-                biblez.currentFont = bilbez.hebrewFont;
+                biblez.currentFont = biblez.hebrewFont;
             } else {
                 biblez.currentFont = inSender.getFont();
             }
@@ -497,6 +518,10 @@ enyo.kind({
     handleSelectHistory: function (inSender, inEvent) {
         this.$.selector.setVerse((inSender.verse) ? inSender.verse : 1);
         this.goPrev = false;
+        if (this.view === "main")
+            biblez.highlightVerse = true;
+        else
+            biblez.highlightSplitVerse = true;
         this.getVerses(inSender.passage);
     },
 
@@ -517,13 +542,8 @@ enyo.kind({
 
     getBookmarks: function() {
         api.getBookmarks(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setBookmarks));
-        api.getBookmarks(-1,-1,enyo.bind(this, this.handleGetBookmarks));
-        /*if (this.$.mainViewPane.getViewName() == "splitContainer") {
-            biblezTools.getBookmarks(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.splitContainer, this.$.splitContainer.setBookmarks));
-        } else {
-            biblezTools.getBookmarks(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.mainView, this.$.mainView.setBookmarks));
-        }*/
-        //biblezTools.getBookmarks(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleBookmarks));
+        this.$.stuff.getStuffKind().getBookmarks();
+        this.$.stuffView.getBookmarks();
     },
 
     handleGetBookmarks: function (bookmarks) {
@@ -569,13 +589,8 @@ enyo.kind({
 
     getHighlights: function() {
         api.getHighlights(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setHighlights));
-        api.getHighlights(-1,-1,enyo.bind(this, this.handleGetHighlights));
-        /*if (this.$.mainViewPane.getViewName() == "splitContainer") {
-            biblezTools.getHighlights(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.splitContainer, this.$.splitContainer.setHighlights));
-        } else {
-            biblezTools.getHighlights(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.mainView, this.$.mainView.setHighlights));
-        }
-        biblezTools.getHighlights(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleHighlights)); */
+        this.$.stuff.getStuffKind().getHighlights();
+        this.$.stuffView.getHighlights();
     },
 
     handleGetHighlights: function (highlights) {
@@ -626,13 +641,8 @@ enyo.kind({
 
     getNotes: function() {
         api.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setNotes));
-        api.getNotes(-1,-1,enyo.bind(this, this.handleGetNotes));
-        /*if (this.$.mainViewPane.getViewName() == "splitContainer") {
-            biblezTools.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.splitContainer, this.$.splitContainer.setNotes));
-        } else {
-            biblezTools.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.mainView, this.$.mainView.setNotes));
-        }
-        biblezTools.getNotes(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleNotes)); */
+        this.$.stuffView.getNotes();
+        this.$.stuff.getStuffKind().getNotes();
     },
 
     handleGetNotes: function (notes) {
@@ -741,26 +751,18 @@ enyo.kind({
 
     viewSelected: function (inSender, inView, inPreviousView) {
         if (inView.name === "stuffView") {
-            this.$.btModule.hide();
-            this.$.btHistory.hide();
-            this.$.btFont.hide();
-            this.$.btStuff.hide();
-            this.$.btSearch.hide();
-            this.$.btGo.hide();
+            this.$.verseBox.hide();
             this.$.passageBox.hide();
+            this.$.personalBox.hide();
             this.$.btBack.show();
             this.$.stuffLabel.show();
         } else if (inView.name === "verseView") {
-            this.$.btGo.show();
-            this.$.btModule.show();
-            this.$.btHistory.show();
-            this.$.btSearch.show();
+            this.$.verseBox.show();
             this.$.passageBox.show();
-            this.$.btFont.show();
-            this.$.btStuff.show();
+            this.$.personalBox.show();
             this.$.btBack.hide();
             this.$.stuffLabel.hide();
-            this.hidePassageLabel();
+            this.resizeHandler();
             this.getVerses();
         }
     },
@@ -778,17 +780,19 @@ enyo.kind({
 
         //if (this.view === "split")
             //enyo.log(this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth , this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth, this.btWidth);
-        if (this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth > this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120 || this.btWidth > this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120) {
-            this.btWidth = (this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth !== 0) ? this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth : this.btWidth;
-            this.$.personalBox.hide();
-            this.$.btGo.hide();
-            this.$.btHistory.hide();
-            this.$.btAction.show();
-        } else if (this.btWidth < this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120 && this.$.pane.getViewName() !== "stuffView") {
-            this.$.personalBox.show();
-            this.$.btGo.show();
-            this.$.btHistory.show();
-            this.$.btAction.hide();
+        if (this.$.pane.getViewName() !== "stuffView") {
+            if (this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth > this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120 || this.btWidth > this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120) {
+                this.btWidth = (this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth !== 0) ? this.$.btGo.hasNode().clientWidth + this.$.btHistory.hasNode().clientWidth + this.$.btBack.hasNode().clientWidth + this.$.btSearch.hasNode().clientWidth + this.$.btFont.hasNode().clientWidth + this.$.btStuff.hasNode().clientWidth : this.btWidth;
+                this.$.personalBox.hide();
+                this.$.btGo.hide();
+                this.$.btHistory.hide();
+                this.$.btAction.show();
+            } else if (this.btWidth < this.$.headerMain.hasNode().clientWidth - this.$.btModule.hasNode().clientWidth - 120 && this.$.pane.getViewName() !== "stuffView") {
+                this.$.personalBox.show();
+                this.$.btGo.show();
+                this.$.btHistory.show();
+                this.$.btAction.hide();
+            }
         }
 
         this.hidePassageLabel();
