@@ -152,6 +152,9 @@ enyo.kind({
         searchType: -2,
         view: "popup"
     },
+
+    scrollToTop: true,
+
     components: [
         {kind: "VFlexBox", height: "100%", components: [
             {name: "stuffHeader", kind: "HFlexBox", align: "center", style: "margin-bottom: 10px;", components: [
@@ -219,9 +222,9 @@ enyo.kind({
                                             {name: "noteTags", flex: 1, className: "sidebar-tags", allowHtml: true}
                                         ]}
                                     ],
-                                    onclick: "goToNote",
-                                    onmousehold: "openEdit",
-                                    onmouseout: "setEditFocus"
+                                    onclick: "goToNote"
+                                    //onmousehold: "openEdit",
+                                    //onmouseout: "setEditFocus"
                                     }]
                                 }
                             ]}
@@ -240,7 +243,7 @@ enyo.kind({
                         {name: "btOrange", kind: "Button", toggling: true, caption: " ", flex: 1, onclick: "getHighlights", className: "color-button", color: "rgba(255,165,0,0.5)", style: "background-color: orange;"}
                     ]},
                     {kind: "VFlexBox", className: "popup-scroller-container", height: "100%", components: [
-                        {kind: "Scroller", className: "popup-scroller", flex: 1, components: [
+                        {name: "scrollerHl", kind: "Scroller", className: "popup-scroller", flex: 1, components: [
                             {name: "hlHint", showing: false, content: $L("No Highlights available. Tap on a verse number to add one!"), className: "hint"},
                             {name: "hlList", kind: "VirtualRepeater", onSetupRow: "getHlListItem", components: [
                                 {name: "itemHl", kind: "SwipeableItem", onConfirm: "deleteHighlight", layoutKind: "HFlexLayout", tapHighlight: false, className: "list-item", components: [
@@ -427,7 +430,9 @@ enyo.kind({
             this.$.bmHint.show();
         }
         this.$.bmList.render();
-        this.$.scrollerBm.scrollTo(0,0);
+        if (this.scrollToTop)
+            this.$.scrollerBm.scrollIntoView(0,0);
+        this.scrollToTop = true;
     },
 
     getBmListItem: function(inSender, inIndex) {
@@ -454,11 +459,11 @@ enyo.kind({
 
     deleteBookmark: function (inSender, inIndex) {
         this.verse = this.bookmarks[inIndex].vnumber;
+        this.scrollToTop = false;
         api.removeBookmark(this.bookmarks[inIndex].id, enyo.bind(this, this.handleDelete, "bookmarks", $L("Bookmark")));
     },
 
     filterBookmarks: function (inSender, inEvent) {
-
         this.getBookmarks(inSender.getValue().toLowerCase());
     },
 
@@ -483,9 +488,11 @@ enyo.kind({
             this.$.noteHint.show();
         }
         this.$.noteList.render();
-        this.$.scrollerNote.scrollTo(0,0);
+        if (this.scrollToTop)
+            this.$.scrollerNote.scrollIntoView(0,0);
         if (this.tappedEdit)
             this.showNote();
+        this.scrollToTop = true;
     },
 
     filterNotes: function (inSender, inEvent) {
@@ -521,6 +528,7 @@ enyo.kind({
 
     deleteNote: function (inSender, inIndex) {
         this.verse = this.notes[inIndex].vnumber;
+        this.scrollToTop = false;
         api.removeNote(this.notes[inIndex].id, enyo.bind(this, this.handleDelete, "notes", $L("Note")));
     },
 
@@ -579,6 +587,8 @@ enyo.kind({
         } else {
             this.$.hlHint.show();
         }
+        if (this.scrollToTop)
+            this.$.scrollerHl.scrollIntoView(0,0);
         this.$.hlList.render();
     },
 
@@ -811,16 +821,22 @@ enyo.kind({
             this.getNotes();
             if (enyo.byId("noteIcon"+this.verse))
                 enyo.byId("noteIcon"+this.verse).innerHTML = "";
+            if (enyo.byId("noteIconSplit"+this.verse))
+                enyo.byId("noteIconSplit"+this.verse).innerHTML = "";
             //this.doNoteDelete();
         } else if (list == "bookmarks") {
             this.getBookmarks();
             if (enyo.byId("bmIcon"+this.verse))
                 enyo.byId("bmIcon"+this.verse).innerHTML = "";
+            if (enyo.byId("bmIconSplit"+this.verse))
+                enyo.byId("bmIconSplit"+this.verse).innerHTML = "";
             //this.doBmDelete();
         } else {
             this.getHighlights();
             if (enyo.byId("verse"+this.verse))
                 enyo.byId("verse"+this.verse).style.backgroundColor = "transparent";
+            if (enyo.byId("verseSplit"+this.verse))
+                enyo.byId("verseSplit"+this.verse).style.backgroundColor = "transparent";
         }
     },
 

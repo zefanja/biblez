@@ -100,7 +100,10 @@ enyo.kind({
         onSync: "",
         onSplitVerse: "",
         onSearch: "",
-        onGetStrong: ""
+        onGetStrong: "",
+        onGetSplitBookmarks: "",
+        onGetSplitHighlights: "",
+        onGetSplitNotes: ""
     },
     published: {
         currentModule: null,
@@ -540,10 +543,16 @@ enyo.kind({
         this.$.versePopup.setNoteCaption((enyo.byId(noteID+inSender.tappedVerse).innerHTML !== "") ? $L("Note") + " - " : $L("Note") + " + ");
     },
 
-    getBookmarks: function() {
-        api.getBookmarks(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setBookmarks));
-        this.$.stuff.getStuffKind().getBookmarks();
-        this.$.stuffView.getBookmarks();
+    getBookmarks: function(inDontSetBM) {
+        if (!inDontSetBM)
+            api.getBookmarks(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setBookmarks));
+
+        if (this.view === "main") {
+            this.$.stuff.getStuffKind().getBookmarks();
+            this.doGetSplitBookmarks();
+        } else
+            this.$.stuffView.getBookmarks();
+
     },
 
     handleGetBookmarks: function (bookmarks) {
@@ -558,16 +567,17 @@ enyo.kind({
         var id = null;
         if (enyo.byId(bmID+verseNumber).innerHTML !== "") {
             var data = (this.$.verseView.getView() == "split") ? biblez.splitBookmarks : biblez.mainBookmarks;
-            enyo.log(enyo.json.stringify(data));
             for (var i=0; i<data.length; i++) {
                 if (data[i].vnumber === verseNumber) {
                     id = data[i].id;
                 }
             }
-            enyo.log("ID:", id);
             if (id !== null)
                 api.removeBookmark(id, enyo.bind(this, this.getBookmarks));
-            enyo.byId(bmID+enyo.json.stringify(verseNumber)).innerHTML = "";
+            if (enyo.byId("bmIcon"+enyo.json.stringify(verseNumber)))
+                enyo.byId("bmIcon"+enyo.json.stringify(verseNumber)).innerHTML = "";
+            if (enyo.byId("bmIconSplit"+enyo.json.stringify(verseNumber)))
+                enyo.byId("bmIconSplit"+enyo.json.stringify(verseNumber)).innerHTML = "";
         } else {
             api.addBookmark(this.$.selector.getBnumber(), this.$.selector.getChapter(), verseNumber, "", "", "", enyo.bind(this, this.getBookmarks));
         }
@@ -587,10 +597,14 @@ enyo.kind({
         }
     },
 
-    getHighlights: function() {
-        api.getHighlights(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setHighlights));
-        this.$.stuff.getStuffKind().getHighlights();
-        this.$.stuffView.getHighlights();
+    getHighlights: function(inDontSetHL) {
+        if (!inDontSetHL)
+            api.getHighlights(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setHighlights));
+        if (this.view === "main") {
+            this.$.stuff.getStuffKind().getHighlights();
+            this.doGetSplitHighlights();
+        } else
+            this.$.stuffView.getHighlights();
     },
 
     handleGetHighlights: function (highlights) {
@@ -599,8 +613,8 @@ enyo.kind({
     },
 
     handleHighlight: function (inSender, inEvent) {
-        var verseNumber = /*(this.$.mainViewPane.getViewName() == "splitContainer") ? this.$.splitContainer.tappedVerse : */this.$.verseView.tappedVerse;
-        var verseID = /*(this.$.mainViewPane.getViewName() == "splitContainer") ? "verseLeft" : */"verse";
+        var verseNumber = this.$.verseView.tappedVerse;
+        var verseID = (this.view == "main") ? "verse" : "verseSplit";
         if (enyo.byId(verseID+verseNumber).style.backgroundColor.search("rgba") == -1) {
             api.addHighlight(this.$.selector.getBnumber(), this.$.selector.getChapter(), verseNumber, inSender.getColor(), "",enyo.bind(this, this.getHighlights));
         } else {
@@ -615,13 +629,6 @@ enyo.kind({
         this.$.noteView.setNote(biblez.mainNotes[inSender.tappedNote].note);
         this.$.noteView.openAt({top: inSender.popupTop, left: inSender.popupLeft}, true);
         this.$.noteView.setShowType("note");
-
-        /*this.$.notePopup.setCaption("");
-        this.$.notePopup.setNote(enyo.application.notes[inSender.tappedNote].note);
-        this.$.notePopup.setEditMode();
-        this.$.notePopup.setDismissWithClick(true);
-        this.$.notePopup.hideCancel();
-        this.$.notePopup.openAt({top: inSender.popupTop, left: inSender.popupLeft}, true); */
     },
 
     handleEditNote: function (inSender, inEvent) {
@@ -630,19 +637,16 @@ enyo.kind({
         var passage = {"bnumber" : this.$.selector.getBnumber(), "cnumber": this.$.selector.getChapter(), "vnumber" : verseNumber};
         //this.$.noteBmSidebar.setBmMode("edit");
         this.$.stuff.openEdit({name: "itemNote", mode: "edit"}, null, passage, {top: 0, left: this.$.verseView.popupLeft});
-        //this.$.noteBmSidebar.setPopupFocus("note");
-        /*if (enyo.byId(noteID+verseNumber).innerHTML !== "") {
-
-        } else {
-            this.$.noteBmSidebar.setBmMode("add");
-            this.$.noteBmSidebar.openEditPopup({name: "itemNote"}, null, passage);
-        }*/
     },
 
-    getNotes: function() {
-        api.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setNotes));
-        this.$.stuffView.getNotes();
-        this.$.stuff.getStuffKind().getNotes();
+    getNotes: function(inDontSetNote) {
+        if (!inDontSetNote)
+            api.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setNotes));
+        if (this.view === "main") {
+            this.$.stuffView.getNotes();
+            this.doGetSplitNotes();
+        } else
+            this.$.stuff.getStuffKind().getNotes();
     },
 
     handleGetNotes: function (notes) {
@@ -666,11 +670,12 @@ enyo.kind({
             enyo.log("ID:", id);
             if (id !== null)
                 api.removeNote(id, enyo.bind(this, this.getNotes));
-            enyo.byId(noteID+enyo.json.stringify(verseNumber)).innerHTML = "";
+            if (enyo.byId("noteIcon"+enyo.json.stringify(verseNumber)))
+                enyo.byId("noteIcon"+enyo.json.stringify(verseNumber)).innerHTML = "";
+            if (enyo.byId("noteIconSplit"+enyo.json.stringify(verseNumber)))
+                enyo.byId("noteIconSplit"+enyo.json.stringify(verseNumber)).innerHTML = "";
         } else {
             this.$.stuff.openEdit({name: "itemNote"}, null, passage, {top: 0, left: this.$.verseView.popupLeft});
-            //this.$.noteBmSidebar.openEditPopup({name: "itemNote"}, null, passage);
-            //this.$.noteBmSidebar.setPopupFocus("note");
         }
     },
 

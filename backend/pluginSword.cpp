@@ -777,6 +777,11 @@ PDL_bool getStrong(PDL_JSParameters *parms) {
 	std::stringstream out;
 
 	SWModule *module = displayLibrary->getModule(moduleName);
+	if (!module) {
+		PDL_JSException(parms, "getStrong: You have to install the 'StrongsGreek' and 'StrongsHebrew' module to get Strong's Numbers!");
+		return PDL_TRUE;
+	}
+
 	module->setKey(key);
 
 	if (strcmp(module->RenderText(), "") != 0) {

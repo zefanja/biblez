@@ -72,7 +72,10 @@ enyo.kind({
                     {name: "toggleCR", kind: "ToggleButton", state: false, onChange: "changeCrossRef"}
                 ]},
                 {align: "center", components: [
-                    {flex: 1, name: "strongs", content: $L("Enable Strong's Numbers")},
+                    {kind: "VFlexBox", flex: 1, components: [
+                        {name: "strongs", content: $L("Enable Strong's Numbers")},
+                        {content: $L("You have to install the 'StrongsGreek' and 'StrongsHebrew' module to use this feature!"), style: "font-size: 0.8em;"}
+                    ]},
                     {name: "toggleStrongs", kind: "ToggleButton", state: false, onChange: "changeStrongs"}
                 ]}
             ]},
@@ -97,6 +100,13 @@ enyo.kind({
                 {kind: "VFlexBox", components: [
                     {kind: "ActivityButton", name: "btRestore", caption: $L("Restore Data"), onclick: "openFilePicker"},
                     {content: $L("All your current data will be removed!!!"), className: "hint-small"}
+                ]}
+            ]},
+            {kind: "RowGroup", caption: $L("Restore BibleZ Pro Backup (old webOS Phone version)"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
+                {kind: "VFlexBox", components: [
+                    {kind: "ActivityButton", name: "btRestoreOld", caption: $L("Restore Old Data"), onclick: "handleOldBackup"},
+                    {kind: "RichText", name: "oldBackupInput", hint: $L("Paste your backup here"), richContent: false}
+
                 ]}
             ]},
             {kind: "Spacer"}
@@ -283,6 +293,57 @@ enyo.kind({
 			enyo.windows.addBannerMessage($L("Backuped") + " " + inType, enyo.json.stringify({}));
 		}
 	},
+
+    handleOldBackup: function () {
+        this.oldData = enyo.json.parse(PalmSystem.decrypt("JesusIsTheLord", this.$.oldBackupInput.getValue()));
+        if (this.oldData.notes && this.oldData.notes.length !== 0) {
+            api.getNotes(-1,-1,enyo.bind(this, this.callbackOldNotes));
+        }
+
+        if (this.oldData.bookmarks && this.oldData.bookmarks.length !== 0) {
+            api.getBookmarks(-1,-1,enyo.bind(this, this.callbackOldBookmarks));
+        }
+    },
+
+    callbackOldNotes: function (data) {
+        var tmpNotes = [];
+        var found = 0;
+        for (var i=0; i<this.oldData.notes.length; i++) {
+            found = 0;
+            for (var j=0; j<data.length; j++) {
+                if (this.oldData.notes[i].bnumber === data[j].bnumber && this.oldData.notes[i].cnumber === data[j].cnumber && this.oldData.notes[i].vnumber === data[j].vnumber) {
+                    found = j;
+                } else {
+
+                }
+            }
+            if (found === 0)
+                data.push(this.oldData.notes[i]);
+            else {
+                data[found].note = data[found].note += "<p> --- Restored Note ----- </p>" + this.oldData.notes[i].note;
+            }
+        }
+        api.restoreNotes(data, enyo.bind(this, this.callbackRestore, $L("Old Notes")));
+        this.$.oldBackupInput.setValue("");
+    },
+
+    callbackOldBookmarks: function (data) {
+        var found = 0;
+        for (var i=0; i<this.oldData.bookmarks.length; i++) {
+            found = 0;
+            for (var j=0; j<data.length; j++) {
+                if (this.oldData.bookmarks[i].bnumber === data[j].bnumber && this.oldData.bookmarks[i].cnumber === data[j].cnumber && this.oldData.bookmarks[i].vnumber === data[j].vnumber) {
+                    found = j;
+                } else {
+
+                }
+            }
+            if (found === 0)
+                data.push(this.oldData.bookmarks[i]);
+        }
+        api.restoreBookmarks(data, enyo.bind(this, this.callbackRestore, $L("Old Bookmarks")));
+        this.$.oldBackupInput.setValue("");
+    },
 
     openFilePicker: function (inSender, inEvent) {
         this.$.filepicker.pickFile();

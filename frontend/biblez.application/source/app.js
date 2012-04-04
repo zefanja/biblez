@@ -52,7 +52,10 @@ enyo.kind({
                     onWelcome: "goToWelcome",
                     onGetVMax: "handleGetVMax",
                     onSync: "handleSyncSplitView",
-                    onSearch: "handleSearch"
+                    onSearch: "handleSearch",
+                    onGetSplitBookmarks: "handleGetSplitBookmarks",
+                    onGetSplitNotes: "handleGetSplitNotes",
+                    onGetSplitHighlights: "handleGetSplitHighlights"
                 },
                 {name: "splitPane", kind: "Pane", showing: false, flex: 1, components: [
                     {name: "splitView", kind: "App.MainView", className: "split-view", view: "split",
@@ -334,6 +337,18 @@ enyo.kind({
 
     handleSplitVerse: function (inSender, verse, passage) {
         this.$.mainView.getVerses(passage, verse);
+    },
+
+    handleGetSplitBookmarks: function (inSender) {
+        this.$.splitView.getBookmarks((this.$.splitPane.showing) ? false : true);
+    },
+
+    handleGetSplitNotes: function (inSender) {
+        this.$.splitView.getNotes((this.$.splitPane.showing) ? false : true);
+    },
+
+    handleGetSplitHighlights: function (inSender) {
+        this.$.splitView.getHighlights((this.$.splitPane.showing) ? false : true);
     },
 
     //APP MENU

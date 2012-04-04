@@ -437,7 +437,10 @@ var api = {
                     transaction.executeSql(sql, [],
                     enyo.bind(this, function (transaction, results) {
                         for (var j=0; j<results.rows.length; j++) {
-                            modules.push({"lang": results.rows.item(j).lang, "modName": results.rows.item(j).modName, "modType": results.rows.item(j).modType, "descr": results.rows.item(j).descr});
+                            if (results.rows.item(j).modType === "texts" || results.rows.item(j).modType === "comments")
+                                modules.push({"lang": results.rows.item(j).lang, "modName": results.rows.item(j).modName, "modType": results.rows.item(j).modType, "descr": results.rows.item(j).descr});
+                            else if (results.rows.item(j).modType === "lexdict" && (results.rows.item(j).modName === "StrongsGreek" || results.rows.item(j).modName === "StrongsHebrew"))
+                                modules.push({"lang": results.rows.item(j).lang, "modName": results.rows.item(j).modName, "modType": results.rows.item(j).modType, "descr": results.rows.item(j).descr});
                         }
                         inCallback(modules);
                     }),
@@ -745,7 +748,7 @@ var api = {
                         enyo.log("Successfully deleted bookmark table!");
                         var sql = "INSERT INTO bookmarks (bnumber, cnumber, vnumber, title, folder, tags) VALUES (?,?,?,?,?,?)";
                         for(var i=0; i<content.length; i++) {
-                            transaction.executeSql(sql, [content[i].bnumber, content[i].cnumber, content[i].vnumber, content[i].title, content[i].folder, content[i].tags],
+                            transaction.executeSql(sql, [content[i].bnumber, content[i].cnumber, content[i].vnumber, (content[i].title) ? content[i].title : "", (content[i].folder) ? content[i].folder : "", (content[i].tags) ? content[i].tags : ""],
                             function () {
                                 z++;
                                 if (z == content.length) {
@@ -774,7 +777,7 @@ var api = {
                         enyo.log("Successfully deleted notes table!");
                         var sql = "INSERT INTO notes (bnumber, cnumber, vnumber, note, title, folder, tags) VALUES (?,?,?,?,?,?,?)";
                         for(var i=0; i<content.length; i++) {
-                            transaction.executeSql(sql, [content[i].bnumber, content[i].cnumber, content[i].vnumber, content[i].note, content[i].title, content[i].folder, content[i].tags],
+                            transaction.executeSql(sql, [content[i].bnumber, content[i].cnumber, content[i].vnumber, content[i].note, (content[i].title) ? content[i].title : "", (content[i].folder) ? content[i].folder : "", (content[i].tags) ? content[i].tags : ""],
                             function () {
                                 z++;
                                 if (z == content.length) {
