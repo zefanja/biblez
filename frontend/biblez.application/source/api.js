@@ -17,7 +17,7 @@ enyo.kind({
     name: "BibleZ.SwordApi",
     kind: "VFlexBox",
     components: [
-        {kind: "Hybrid", name: "sword", executable: "pluginSword", width:"0", height:"0", onPluginReady: "handlePluginReady", style: "float: left;"}
+        {kind: "Hybrid", name: "sword", executable: "pluginSword", width:"0", height:"0", onPluginReady: "handlePluginReady", onPluginDisconnected: "handlePluginDisconnect", style: "float: left;"}
     ],
     events: {
         onSwordReady: "",
@@ -66,6 +66,10 @@ enyo.kind({
         enyo.log("Plugin is ready.");
         this.pluginReady = true;
         this.doSwordReady();
+    },
+
+    handlePluginDisconnect: function (inSender) {
+        //enyo.log("Plugin disconnects :(");
     },
 
     getInstalledModules: function (inCallback) {
@@ -686,9 +690,9 @@ var api = {
         }
     },
 
-    updateHighlight: function (id, color, descr, inCallback) {
+    updateHighlight: function (bnumber, cnumber, vnumber, color, descr, inCallback) {
         try {
-            var sql = 'UPDATE highlights SET color = "' + color + '" WHERE id = "' + id + '"';
+            var sql = 'UPDATE highlights SET color = "' + color + '" WHERE bnumber = "' + bnumber + '" AND cnumber = "' + cnumber + '" AND vnumber = "' + vnumber + '";';
             //enyo.log(sql);
             this.db.transaction(
                 enyo.bind(this,(function (transaction) {

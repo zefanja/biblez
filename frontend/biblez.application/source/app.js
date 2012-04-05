@@ -114,7 +114,7 @@ enyo.kind({
         enyo.keyboard.setResizesWindow(false);
         biblez.isOpen = false;
         biblez.openedSplitView = false;
-        //biblez.scrollHorizontal = true;
+        biblez.reloadModules = false;
 
         //LOAD PREFERENCES
         if (enyo.getCookie("mainModule"))
@@ -138,8 +138,8 @@ enyo.kind({
     },
 
     handleModulesChanged: function (inSender) {
-        this.$.mainView.handleModulesChanged(biblez.modules);
-        this.$.splitView.handleModulesChanged(biblez.modules);
+        this.$.mainView.handleGetModules(biblez.modules, true);
+        this.$.splitView.handleGetModules(biblez.modules, true);
     },
 
     handleGetBooknames: function (inSender, module) {
@@ -229,11 +229,13 @@ enyo.kind({
 
     //PANE STUFF
 
-    goToMainView: function () {
+    goToMainView: function (inSender, inWait) {
         if (biblez.welcome)
             this.$.mainPane.back();
-        else
-            this.$.mainPane.selectViewByName("verseView");
+        else {
+            if (!inWait || typeof inWait !== "boolean")
+                this.$.mainPane.selectViewByName("verseView");
+        }
     },
 
     goToWelcome: function () {
@@ -242,7 +244,6 @@ enyo.kind({
     },
 
     viewSelected: function(inSender, inView, inPreviousView) {
-        //enyo.log(inPreviousView.name);
         this.$.btSplit.hide();
         if (inView.name == "modManView") {
             this.$.modManView.getRepos();

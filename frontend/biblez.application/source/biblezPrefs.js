@@ -119,6 +119,8 @@ enyo.kind({
         if (enyo.getCookie("scrolling")) {
             biblez.scrollHorizontal = enyo.json.parse(enyo.getCookie("scrolling"));
             this.$.toggleScroll.setState(biblez.scrollHorizontal);
+        } else {
+            biblez.scrollHorizontal = true;
         }
 
         if (enyo.getCookie("linebreak")) {

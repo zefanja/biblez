@@ -393,6 +393,7 @@ enyo.kind({
     },
 
     handleGetModules: function (modules) {
+        //enyo.log(modules);
         biblez.modules = enyo.json.parse(modules);
         this.doModulesChanged();
     },

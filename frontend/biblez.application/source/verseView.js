@@ -185,7 +185,6 @@ enyo.kind({
     },
 
     setHighlights: function(highlights) {
-        //biblez.highlights = highlights;
         var verseID = (this.view === "main") ? "verse" : "verseSplit";
         for (var i=0;i<highlights.length; i++) {
             enyo.byId(verseID+highlights[i].vnumber).style.backgroundColor = highlights[i].color;

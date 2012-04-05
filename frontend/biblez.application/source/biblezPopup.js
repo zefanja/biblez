@@ -698,7 +698,7 @@ enyo.kind({
            {content: $L("About ") + enyo.fetchAppInfo().title, className: "popup-title"},
            {content: "Version " + enyo.fetchAppInfo().version, className: "popup-version"},
            {style: "text-align: center;", components:[{kind: "Image", style: "width: 80px;", src: "images/biblezHD128.png"}]},
-           {content: $L("BibleZ Pro HD is based on the") + " <a href='http://www.crosswire.org/sword'>" + $L("SWORD Project") + "</a> " + $L("and it is licensed under") + " <a href='http://www.gnu.org/licenses/gpl.txt'>GPLv3</a>.<br>&copy; 2010-2011 by <a href='http://zefanjas.de'>zefanjas.de</a>", className: "popup-info"},
+           {content: $L("BibleZ HD Pro is based on the") + " <a href='http://www.crosswire.org/sword'>" + $L("SWORD Project") + "</a> " + $L("and it is licensed under") + " <a href='http://www.gnu.org/licenses/gpl.txt'>GPLv3</a>.<br>&copy; 2010-2011 by <a href='http://zefanjas.de'>zefanjas.de</a>", className: "popup-info"},
            {style: "text-align: center;", components:[{content: "<a href='http://www.facebook.com/pages/zefanjas/118603198178545'><img src='images/facebook_32.png'/></a>  <a href='http://twitter.com/biblez'><img src='images/twitter_32.png'/></a>"}]}
         ]},
         {kind: "HFlexBox", components: [

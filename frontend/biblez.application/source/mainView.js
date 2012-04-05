@@ -118,6 +118,7 @@ enyo.kind({
     btWidth: 0,
     currentCrossRef: false,
     currentStrong: null,
+    inWait: false,
 
     create: function () {
         this.inherited(arguments);
@@ -168,9 +169,10 @@ enyo.kind({
 
     //API Calls and Callbacks
 
-    handleGetModules: function (modules) {
+    handleGetModules: function (modules, inWait) {
+        this.inWait = inWait;
         //enyo.log(modules);
-        modules = enyo.json.parse(modules);
+        modules = (typeof modules === "string") ? enyo.json.parse(modules) : modules;
         biblez.modules = modules;
         var tmpMods = [];
         if(modules.length !== 0) {
@@ -196,10 +198,6 @@ enyo.kind({
 
     },
 
-    handleModulesChanged: function (modules) {
-        this.$.library.setModules(modules);
-    },
-
     handleGetBooknames: function (bnames) {
         //enyo.log(bnames);
         biblez.bookNames = enyo.json.parse(bnames);
@@ -222,7 +220,8 @@ enyo.kind({
         }
 
         //Go to verseView (app.js)
-        this.doGoToMain();
+        this.doGoToMain(this.inWait);
+        this.inWait = false;
     },
 
     handleOnVerse: function (inSender, inEvent) {
@@ -640,7 +639,7 @@ enyo.kind({
     },
 
     getNotes: function(inDontSetNote) {
-        if (!inDontSetNote)
+        if (!inDontSetNote || (inDontSetNote && inDontSetNote.name))
             api.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setNotes));
         if (this.view === "main") {
             this.$.stuff.getStuffKind().getNotes();

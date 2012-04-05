@@ -485,14 +485,14 @@ PDL_bool getModuleDetails (PDL_JSParameters *parms) {
 	if (source == installMgr->sources.end()) {
 		PDL_JSException(parms, "remoteListModules: Couldn't find remote source");
 		finish(-3);
-		return PDL_FALSE;
+		return PDL_TRUE;
 	}
 
 	SWMgr* confReader = source->second->getMgr();
 	SWModule *module = confReader->getModule(moduleName);
 	if (!module) {
 		PDL_JSException(parms, "getModuleDetails: Couldn't find Module");
-		return PDL_FALSE;
+		return PDL_TRUE;
 	}
 
 	mod << "{";
@@ -1174,9 +1174,9 @@ PDL_bool unzipModule(PDL_JSParameters *parms) {
 
 int main () {
 	//Basic settings
-	system("mkdir -p /media/internal/.sword/install/mods.d/");
+	system("mkdir -p /media/internal/.sword/mods.d/");
+	system("mkdir -p /media/internal/.sword/modules/");
 	system("mkdir -p /media/internal/biblez/");
-	//system("chmod -R 777 /media/internal/.sword/");
 	putenv("SWORD_PATH=/media/internal/.sword");
 
 	//Initialize Mgr
