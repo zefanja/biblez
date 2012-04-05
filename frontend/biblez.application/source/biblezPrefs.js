@@ -104,7 +104,8 @@ enyo.kind({
             ]},
             {kind: "RowGroup", caption: $L("Restore BibleZ Pro Backup (old webOS Phone version)"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
                 {kind: "VFlexBox", components: [
-                    {kind: "ActivityButton", name: "btRestoreOld", caption: $L("Restore Old Data"), onclick: "handleOldBackup"},
+                    {content: $L("You can import your notes and bookmarks from BibleZ Pro (webOS phone version) to BibleZ HD Pro. Restoring your highlights isn't supported."), className: "hint-small"},
+                    {kind: "ActivityButton", name: "btRestoreOld", caption: $L("Import Bookmarks and Notes"), onclick: "handleOldBackup"},
                     {kind: "RichText", name: "oldBackupInput", hint: $L("Paste your backup here"), richContent: false}
 
                 ]}

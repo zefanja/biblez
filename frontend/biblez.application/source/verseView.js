@@ -110,7 +110,7 @@ enyo.kind({
 
     handleVerseTap: function(inSender, inUrl) {
         //enyo.log(inUrl);
-        var urlParams = biblezTools.getUrlParams(inUrl);
+        var urlParams = api.getUrlParams(inUrl);
         if (inUrl.match(/.*\:\/\//i) == "verse://") {
             var verseID = (this.view === "main") ? "vn" : "vnSplit";
             this.tappedVerse = parseInt(inUrl.replace("verse://",""), 10);

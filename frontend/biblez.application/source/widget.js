@@ -48,7 +48,7 @@ enyo.kind({
         onOpenModMan: ""
     },
     components: [
-        {content: $L("Thank you for installing BibleZ Pro HD. Currently there are no modules installed. Please open the Module Manager and add at least one module!"), className: "start-label"},
+        {content: $L("Thank you for installing BibleZ HD Pro. Currently there are no modules installed. Please open the Module Manager and add at least one module!"), className: "start-label"},
         {kind: "Button", caption: $L("Open Module Manager"), onclick: "doOpenModMan"}
     ]
 });

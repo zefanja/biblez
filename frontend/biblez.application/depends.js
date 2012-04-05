@@ -5,14 +5,10 @@ enyo.depends(
   "source/mainView.js",
   "source/verseView.js",
   "source/widget.js",
-  //"source/biblez.js",
   "source/popup.js",
   "source/stuff.js",
-  "source/biblezScroller.js",
   "source/biblezModuleManager.js",
   "source/biblezPrefs.js",
-  "source/biblezTools.js",
-  "source/biblezSplit.js",
   "source/mapping.js",
   "css/biblez.css"
 );

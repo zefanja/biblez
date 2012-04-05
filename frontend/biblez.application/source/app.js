@@ -32,7 +32,7 @@ enyo.kind({
         {kind: "AppMenu", components: [
             {caption: $L("Module Manager"), onclick: "openModuleMgr"},
             {caption: $L("Preferences"), onclick: "openPrefs"},
-            {caption: $L("Disable Auto Dim"), onclick: "setDim", dim: true},
+            {caption: $L("Disable Sleep Mode"), onclick: "setDim", dim: true},
             {caption: $L("Help"), onclick: "openHelp"},
             {caption: $L("Leave A Review"), onclick: "openReview"},
             {caption: $L("About"), onclick: "openAbout"}
@@ -113,6 +113,7 @@ enyo.kind({
 
         enyo.keyboard.setResizesWindow(false);
         biblez.isOpen = false;
+        biblez.openedSplitView = false;
         //biblez.scrollHorizontal = true;
 
         //LOAD PREFERENCES
@@ -185,8 +186,8 @@ enyo.kind({
             this.$.modManView.stopSpinner();
     },
 
-    getRemoteModules: function () {
-        this.$.swordApi.getRemoteModules();
+    getRemoteModules: function (inRepo) {
+        this.$.swordApi.getRemoteModules(inRepo);
     },
 
     handleGetRemoteModules: function (inSender, modules) {
@@ -275,7 +276,11 @@ enyo.kind({
                 this.$.btSplit.setClassName("split-button-middle");
                 var right = (this.splitWidth === 0) ? window.innerWidth/2-31 : this.splitWidth;
                 this.$.btSplit.addStyles("right: " +  right + "px;");
-                this.$.splitView.getVerses(this.$.mainView.getPassage().passage);
+                if (!biblez.openedSplitView) {
+                    this.$.splitView.getVerses(this.$.mainView.getPassage().passage);
+                    biblez.openedSplitView = true;
+                }
+
                 this.$.splitView.resizeHandler();
                 this.$.mainView.resizeHandler(true);
             }
@@ -363,11 +368,11 @@ enyo.kind({
 
     setDim: function (inSender, inEvent) {
         if (inSender.dim) {
-            inSender.setCaption($L("Enable Auto Dim"));
+            inSender.setCaption($L("Enable Sleep Mode"));
             inSender.dim = false;
             enyo.windows.setWindowProperties(window, {blockScreenTimeout: true});
         } else {
-            inSender.setCaption($L("Disable Auto Dim"));
+            inSender.setCaption($L("Disable Sleep Mode"));
             inSender.dim = true;
             enyo.windows.setWindowProperties(window, {blockScreenTimeout: false});
         }
@@ -377,13 +382,13 @@ enyo.kind({
         this.$.palmService.call({
             id: 'com.palm.app.browser',
             params: {
-                "target": "http://zefanjas.de/biblez"
+                "target": "http://zefanjas.de/biblezpro"
             }
         });
     },
 
     openReview: function () {
-        window.location = "http://developer.palm.com/appredirect/?packageid=de.zefanjas.biblezprohd";
+        window.location = "http://developer.palm.com/appredirect/?packageid=de.zefanjas.biblezhdpro";
     },
 
     openAbout: function ()  {

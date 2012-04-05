@@ -544,7 +544,7 @@ enyo.kind({
     },
 
     getBookmarks: function(inDontSetBM) {
-        if (!inDontSetBM)
+        if (!inDontSetBM || (inDontSetBM && inDontSetBM.name))
             api.getBookmarks(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setBookmarks));
 
         if (this.view === "main") {
@@ -643,10 +643,10 @@ enyo.kind({
         if (!inDontSetNote)
             api.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setNotes));
         if (this.view === "main") {
-            this.$.stuffView.getNotes();
+            this.$.stuff.getStuffKind().getNotes();
             this.doGetSplitNotes();
         } else
-            this.$.stuff.getStuffKind().getNotes();
+            this.$.stuffView.getNotes();
     },
 
     handleGetNotes: function (notes) {

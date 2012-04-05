@@ -644,7 +644,7 @@ enyo.kind({
             //this.setStyle("");
             this.$.warning.hide();
             this.$.repoList.show();
-            this.setCaption($L("Select SWORD Source"));
+            this.setCaption($L("Select Module Source"));
             this.$.btAccept.hide();
             this.$.btReload.show();
         } else {

@@ -1,16 +1,16 @@
 {
   "id": "de.zefanjas.biblezhdpro",
-  "version": "0.6.8",
+  "version": "1.0.0",
   "vendor": "zefanjas",
   "type": "web",
   "main": "index.html",
-  "title": "BibleZ Pro HD",
+  "title": "BibleZ HD Pro",
   "plug-ins": true,
   "icon": "biblez.png",
   "uiRevision": 2,
   "universalSearch" : {
       "search" :   {
-          "displayName"  : "BibleZ Pro HD",
+          "displayName"  : "BibleZ HD Pro",
           "url"          : "de.zefanjas.biblezhdpro",
           "launchParam"  : {"search":"#{searchTerms}"}
       }

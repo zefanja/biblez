@@ -153,7 +153,7 @@ enyo.kind({
         view: "popup"
     },
 
-    scrollToTop: true,
+    scrollToTop: false,
 
     components: [
         {kind: "VFlexBox", height: "100%", components: [
@@ -416,6 +416,7 @@ enyo.kind({
 
     getBookmarks: function (searchTerm) {
         if (searchTerm || this.$.bmSearch.getValue() !== "") {
+            this.scrollToTop = true;
             api.getBookmarks(-1,-1,enyo.bind(this, this.handleBookmarks), (searchTerm) ? searchTerm : this.$.bmSearch.getValue());
         } else {
             api.getBookmarks(-1,-1,enyo.bind(this, this.handleBookmarks));
@@ -432,7 +433,7 @@ enyo.kind({
         this.$.bmList.render();
         if (this.scrollToTop)
             this.$.scrollerBm.scrollIntoView(0,0);
-        this.scrollToTop = true;
+        this.scrollToTop = false;
     },
 
     getBmListItem: function(inSender, inIndex) {
@@ -459,7 +460,7 @@ enyo.kind({
 
     deleteBookmark: function (inSender, inIndex) {
         this.verse = this.bookmarks[inIndex].vnumber;
-        this.scrollToTop = false;
+        //this.scrollToTop = false;
         api.removeBookmark(this.bookmarks[inIndex].id, enyo.bind(this, this.handleDelete, "bookmarks", $L("Bookmark")));
     },
 
@@ -472,6 +473,7 @@ enyo.kind({
     getNotes: function (searchTerm) {
         //this.$.spinner.show();
         if (searchTerm || this.$.noteSearch.getValue() !== "") {
+            this.scrollToTop = true;
             api.getNotes(-1,-1,enyo.bind(this, this.handleNotes), (searchTerm) ? searchTerm : this.$.noteSearch.getValue());
         } else {
             api.getNotes(-1,-1,enyo.bind(this, this.handleNotes));
@@ -492,7 +494,7 @@ enyo.kind({
             this.$.scrollerNote.scrollIntoView(0,0);
         if (this.tappedEdit)
             this.showNote();
-        this.scrollToTop = true;
+        this.scrollToTop = false;
     },
 
     filterNotes: function (inSender, inEvent) {
@@ -528,7 +530,7 @@ enyo.kind({
 
     deleteNote: function (inSender, inIndex) {
         this.verse = this.notes[inIndex].vnumber;
-        this.scrollToTop = false;
+        //this.scrollToTop = false;
         api.removeNote(this.notes[inIndex].id, enyo.bind(this, this.handleDelete, "notes", $L("Note")));
     },
 
@@ -574,6 +576,9 @@ enyo.kind({
         if (this.$.btOrange.depressed)
             colors.push(this.$.btOrange.color);
 
+        if (colors.length !== 0)
+            this.scrollToTop = true;
+
         api.getHighlights(-1,-1,enyo.bind(this, this.handleHighlights), colors);
     },
 
@@ -589,6 +594,7 @@ enyo.kind({
         }
         if (this.scrollToTop)
             this.$.scrollerHl.scrollIntoView(0,0);
+        this.scrollToTop = false;
         this.$.hlList.render();
     },
 

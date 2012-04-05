@@ -189,9 +189,8 @@ enyo.kind({
         this.doRefreshedSource(response);
     },
 
-    getRemoteModules: function () {
+    getRemoteModules: function (inRepo) {
         enyo.log("Calling getRemoteModules...", enyo.getCookie("currentRepo"));
-        //enyo.log(enyo.application.dbSets.currentRepo);
         if (this.pluginReady) {
             try {var status = this.$.sword.callPluginMethod("remoteListModules", enyo.getCookie("currentRepo"));}
             catch (e) {this.showError("Plugin exception: " + e);}
@@ -230,7 +229,7 @@ enyo.kind({
     },
 
     handleInstallModule: function (response) {
-        //enyo.log(response);
+        enyo.log(response);
         this.doInstalledModule(response);
     },
 
@@ -885,7 +884,7 @@ var api = {
                 content = content + "<div class='verse-intro'>" + verses[i].intro + "</div>";
             }
 
-
+            //enyo.log("Heading:", verses[i].heading);
             if (verses[i].heading && biblez.heading && !plain) {
                 //enyo.log("Heading:", verses[i].heading);
                 content = content + "<div class='verse-heading'>" + verses[i].heading.replace(/<[^>]*>?/g, "") + "</div>";
@@ -939,5 +938,48 @@ var api = {
         enyo.error(message);
     }
 };
+
+enyo.kind({
+    name: "FileService",
+    kind: enyo.Component,
+    components: [
+    {
+        kind: enyo.PalmService,
+        name: "service",
+        service: "palm://de.zefanjas.biblez.enyo.fileio/",
+        method: "writefile",
+        onSuccess: "handleSuccess",
+        onFailure: "handleError"
+    },
+    {
+        kind: enyo.PalmService,
+        name: "readService",
+        service: "palm://de.zefanjas.biblez.enyo.fileio/",
+        method: "readfile",
+        onSuccess: "handleSuccess",
+        onFailure: "handleError"
+    }
+    ],
+
+    writeFile: function(path, content, callback) {
+        // store the callback on the request object created by call
+        this.$.service.call({"path": path, "content": content}, {"callback": callback});
+    },
+
+    readFile: function(path, callback) {
+        // store the callback on the request object created by call
+        this.$.readService.call({"path": path}, {"callback": callback});
+    },
+
+    handleSuccess: function(inSender, inResponse, inRequest) {
+        inRequest.callback(inResponse);
+        //enyo.log("PROVIDE DIR RESPONSE", inResponse);
+    },
+
+    handleError: function (inSender, inResponse, inRequest) {
+        enyo.error("GOT AN ERROR!", inResponse);
+        //inRequest.callback(inResponse);
+    }
+});
 
 var biblez = {};
