@@ -291,7 +291,7 @@ enyo.kind({
     },
 
     seperatorDragStart: function (inSender, inEvent) {
-        if (Math.abs(inEvent.dx) > Math.abs(inEvent.dy)) {
+        if (Math.abs(inEvent.dx) > Math.abs(inEvent.dy) && this.$.splitPane.showing) {
             this.drag = true;
             return true;
         }

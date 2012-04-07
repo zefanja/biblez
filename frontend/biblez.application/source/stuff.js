@@ -189,16 +189,21 @@ enyo.kind({
                             {name: "scrollerBm", kind: "Scroller", className: "popup-scroller", flex: 1, components: [
                                 {name: "bmHint", content: $L("No Bookmarks available. Tap on a verse number to add one!"), showing: false, className: "hint"},
                                 {name: "bmList", kind: "VirtualRepeater", onSetupRow: "getBmListItem", components: [
-                                    {name: "itemBm", kind: "SwipeableItem", onConfirm: "deleteBookmark", layoutKind: "VFlexLayout", tapHighlight: false, className: "list-item", components: [
-                                        {name: "bmPassage"},
-                                        {kind: "HFlexBox", components: [
-                                            {name: "bmFolder", flex: 1, className: "sidebar-folder", allowHtml: true},
-                                            {name: "bmTags", flex: 1, className: "sidebar-tags", allowHtml: true}
+                                    {name: "itemBm", kind: "SwipeableItem", onConfirm: "deleteBookmark", layoutKind: "HFlexLayout", tapHighlight: false, className: "list-item", components: [
+                                        {kind: "VFlexBox", pack: "center", flex: 1, components: [
+                                            {name: "bmPassage"},
+                                            {kind: "HFlexBox", components: [
+                                                {name: "bmFolder", flex: 1, className: "sidebar-folder", allowHtml: true},
+                                                {name: "bmTags", flex: 1, className: "sidebar-tags", allowHtml: true}
+                                            ]}
+
+                                        ]},
+                                        {kind: "VFlexBox", pack: "center", align: "center", components: [
+                                            {name: "btEditBM", kind: "IconButton", icon: "images/edit.png", onclick: "editBookmark"}
                                         ]}
+
                                     ],
-                                    onclick: "goToVerse",
-                                    onmousehold: "openEdit",
-                                    onmouseout: "setEditFocus"
+                                    onclick: "goToVerse"
                                     }]
                                 }
                             ]}
@@ -361,8 +366,15 @@ enyo.kind({
                 this.$.headerTitle.setContent($L("Highlights"));
                 title = $L("Highlights");
             break;
+            case "searchView":
+                this.$.headerTitle.setContent($L("Search"));
+                title = $L("Search");
+            break;
             case "editView":
-                //this.$.headerTitle.setContent($L("Add Note"));
+                if (this.$.editView.getEditType() == "bookmark")
+                    this.$.editView.setFocus();
+                else
+                    this.$.editView.setNoteFocus();
                 api.getFolders(enyo.bind(this.$.editView, this.$.editView.handleFolders));
             break;
             case "noteView":
@@ -466,6 +478,17 @@ enyo.kind({
 
     filterBookmarks: function (inSender, inEvent) {
         this.getBookmarks(inSender.getValue().toLowerCase());
+    },
+
+    editBookmark: function (inSender, inEvent) {
+        this.currentBookmark = this.bookmarks[inEvent.rowIndex];
+        this.$.editView.setEditType("bookmark");
+        this.setEditMode("edit");
+        this.$.editView.setBtCaption($L("Edit"));
+        this.$.editView.setData(this.currentBookmark.title, this.currentBookmark.folder, this.currentBookmark.tags);
+        this.$.editView.setFocus();
+        this.$.stuffPane.selectViewByName("editView");
+        return true;
     },
 
     //NOTES VIEW

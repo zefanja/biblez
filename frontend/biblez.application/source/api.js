@@ -901,7 +901,7 @@ var api = {
             content = content + findBreak;
 
             if (biblez.linebreak) {
-                content = content + "<br>";
+                content = content + "<br />";
             }
         }
 

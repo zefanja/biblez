@@ -153,6 +153,7 @@ enyo.kind({
     },
 
     setBookmarks: function(bookmarks) {
+        bookmarks = (typeof bookmarks === "string") ? enyo.json.parse(bookmarks) : bookmarks;
         var bmID = "bmIcon";
         if (this.view === "main") {
             biblez.mainBookmarks = bookmarks;
@@ -168,6 +169,7 @@ enyo.kind({
     },
 
     setNotes: function(notes) {
+        notes = (typeof notes === "string") ? enyo.json.parse(notes) : notes;
         var noteIcon = "noteIcon";
         var noteID = "note";
         if (this.view === "main") {
@@ -185,6 +187,7 @@ enyo.kind({
     },
 
     setHighlights: function(highlights) {
+        highlights = (typeof highlights === "string") ? enyo.json.parse(highlights) : highlights;
         var verseID = (this.view === "main") ? "verse" : "verseSplit";
         for (var i=0;i<highlights.length; i++) {
             enyo.byId(verseID+highlights[i].vnumber).style.backgroundColor = highlights[i].color;

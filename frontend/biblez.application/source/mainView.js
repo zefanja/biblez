@@ -543,6 +543,7 @@ enyo.kind({
     },
 
     getBookmarks: function(inDontSetBM) {
+        //enyo.log(inDontSetBM, this.view);
         if (!inDontSetBM || (inDontSetBM && inDontSetBM.name))
             api.getBookmarks(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setBookmarks));
 
@@ -561,7 +562,7 @@ enyo.kind({
 
     handleBookmark: function (inSender, inEvent) {
         this.$.versePopup.close();
-        var verseNumber = /*(this.$.mainViewPane.getViewName() == "splitContainer") ? this.$.splitContainer.tappedVerse : */this.$.verseView.tappedVerse;
+        var verseNumber = this.$.verseView.tappedVerse;
         var bmID = (this.$.verseView.getView() == "split") ? "bmIconSplit" : "bmIcon";
         var id = null;
         if (enyo.byId(bmID+verseNumber).innerHTML !== "") {
