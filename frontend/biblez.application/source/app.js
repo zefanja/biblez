@@ -331,6 +331,7 @@ enyo.kind({
     //SPLIT VIEW
 
     handleSyncSplitView: function (inSender, inEvent) {
+        enyo.log("HandleSync", this.$.splitView.getSync() && this.$.splitPane.showing);
         if (this.$.splitView.getSync() && this.$.splitPane.showing) {
             if (inSender.goPrev) {
                 this.$.splitView.setGoPrev(true);

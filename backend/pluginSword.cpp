@@ -664,10 +664,13 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 		return PDL_TRUE;
 	}
 
-	module->setKey(key);
+	//module->setKey(key);
 
-	VerseKey *vk = (VerseKey*)module->getKey();
+	//VerseKey *vk = (VerseKey*)module->getKey();
+	VerseKey *vk = dynamic_cast<VerseKey *>(module->getKey());
+	//vk->AutoNormalize(false);
 	vk->Headings(true);
+	vk->setText(key);
 
 	ListKey verses = VerseKey().ParseVerseList(key, "", true);
 

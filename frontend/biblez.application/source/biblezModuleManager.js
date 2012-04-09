@@ -180,7 +180,9 @@ enyo.kind({
 
     reloadRepo: function (inSender, inValue, inOldValue) {
         enyo.setCookie("currentRepo", inValue);
-        this.doListModules(inValue);
+        //this.doListModules(inValue);
+        this.$.spinner.show();
+        this.doRefreshSource();
     },
 
     downloadMods: function(update) {

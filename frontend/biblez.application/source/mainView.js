@@ -119,6 +119,7 @@ enyo.kind({
     currentCrossRef: false,
     currentStrong: null,
     inWait: false,
+    updateStuff: true,
 
     create: function () {
         this.inherited(arguments);
@@ -252,6 +253,7 @@ enyo.kind({
 
     handleGetVerses: function (response) {
         //enyo.log(response);
+        this.updateStuff = false;
         var tmpVerses = enyo.json.parse(response.split("<#split#>")[0]);
         var tmpPassage = enyo.json.parse(response.split("<#split#>")[1]);
         if (!this.currentCrossRef) {
@@ -268,6 +270,7 @@ enyo.kind({
                 if (this.view === "split")
                     this.goPrev = false;
                 this.getBookmarks();
+                enyo.log("Getting highlights...", this.view);
                 this.getHighlights();
                 this.getNotes();
                 if (this.view === "split")
@@ -287,12 +290,8 @@ enyo.kind({
             this.doSync();
 
         this.currentCrossRef = false;
+        this.updateStuff = true;
         this.setHistory();
-
-
-
-        //enyo.log(verses);
-        //enyo.log(passage);
     },
 
     getVMax: function () {
@@ -549,7 +548,8 @@ enyo.kind({
 
         if (this.view === "main") {
             this.$.stuff.getStuffKind().getBookmarks();
-            this.doGetSplitBookmarks();
+            if (this.updateStuff)
+                this.doGetSplitBookmarks();
         } else
             this.$.stuffView.getBookmarks();
 
@@ -598,11 +598,13 @@ enyo.kind({
     },
 
     getHighlights: function(inDontSetHL) {
+        enyo.log(inDontSetHL, this.view, this.$.selector.bnumber, this.$.selector.chapter);
         if (!inDontSetHL)
             api.getHighlights(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setHighlights));
         if (this.view === "main") {
             this.$.stuff.getStuffKind().getHighlights();
-            this.doGetSplitHighlights();
+            if (this.updateStuff)
+                this.doGetSplitHighlights();
         } else
             this.$.stuffView.getHighlights();
     },
@@ -644,7 +646,8 @@ enyo.kind({
             api.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setNotes));
         if (this.view === "main") {
             this.$.stuff.getStuffKind().getNotes();
-            this.doGetSplitNotes();
+            if (this.updateStuff)
+                this.doGetSplitNotes();
         } else
             this.$.stuffView.getNotes();
     },
