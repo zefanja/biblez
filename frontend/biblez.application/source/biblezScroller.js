@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -44,14 +44,14 @@ enyo.kind({
     components: [
         {kind: "ApplicationEvents", onWindowRotated: "windowRotated"},
 		{name: "firstSnapper", components: [
-			{name: "prevChapter", content: "Previous Chapter", className: "chapter-nav-left chapter-nav"}			
+			{name: "prevChapter", content: "Previous Chapter", className: "chapter-nav-left chapter-nav"}
 		]},
 		{name: "mainView", kind: "HtmlContent", allowHtml: true, content: "", className: "view-verses", onLinkClick: "handleVerseTap"},
 		{kind: "Scroller", name: "mainScroller", showing: false, components: [
 			{name: "mainViewPhone", kind: "HtmlContent", allowHtml: true, content: "", className: "view-verses-single", onLinkClick: "handleVerseTap"}
 		]}
     ],
-	
+
 	create: function () {
 		this.inherited(arguments);
 		this.setIndex(1);
@@ -59,7 +59,7 @@ enyo.kind({
 		this.starter = 0;
 		//enyo.keyboard.forceHide();
 	},
-	
+
 	rendered: function () {
 		this.inherited(arguments);
 		if (enyo.fetchDeviceInfo().keyboardAvailable) {
@@ -75,11 +75,11 @@ enyo.kind({
 			this.$.firstSnapper.addStyles("width: " + this.node.clientWidth + "px;");
 		}
 		this.starter = 1;
-		
-		
+
+
 		//enyo.log(this.$.mainView.hasNode());
 	},
-	
+
 	changeChapter: function (inSender, inEvent) {
 		console.log("CHANGE CHAPTER... " + this.index);
 		if (this.index == 0) {
@@ -88,17 +88,17 @@ enyo.kind({
 			this.doNextChapter();
 		}
 	},
-	
+
 	getVerseContent: function(vnumber) {
-		
+
 	},
-    
+
     setVerses: function (verses, vnumber) {
 		this.vnumber = vnumber;
 		this.setIndex(1);
 		if (enyo.fetchDeviceInfo().keyboardAvailable)
 			this.$.mainScroller.setScrollTop(0);
-		
+
 		//enyo.log("NODE1: ", this.node.clientWidth, this.node.clientHeight);
 		var height = this.node.clientHeight - 40;
 		var width = this.node.clientWidth - 40;
@@ -112,12 +112,12 @@ enyo.kind({
 			this.$.mainScroller.addStyles("width: " + window.innerWidth + "px;");
 			this.$.mainScroller.addStyles("height: " + window.innerHeight + "px;");
 		}
-		
+
 		var findBreak = "";
-		content = "";
+		/*content = "";
 		if (this.linebreak) {
 			content = "<p>";
-		}
+		}*/
 		var content = "";
 		var tmpVerse = "";
 		for (var i=0; i<verses.length; i++) {
@@ -138,22 +138,22 @@ enyo.kind({
 			content = content + " <span id='noteIcon" + verses[i].vnumber + "'></span> ";
 			content = content + " <span id='bmIcon" + verses[i].vnumber + "'></span> ";
 			content = content + findBreak;
-			
+
 			if (this.linebreak) {
-				content = content + "</p>";
+				content = content + "<br>";
 			}
 		}
 		//this.resized();
 		//var height = this.node.clientHeight - 50;
 		//this.$.mvContainer.addStyles("height: " + height + "px;");
 		//this.$.mainView.addStyles("height: " + height-20 + "px;");
-		if (!enyo.fetchDeviceInfo().keyboardAvailable) 
+		if (!enyo.fetchDeviceInfo().keyboardAvailable)
 			this.$.mainView.setContent(content);
-		else 
+		else
 			this.$.mainViewPhone.setContent(content);
 		this.setSnappers(vnumber);
 	},
-	
+
 	handleVerseTap: function(inSender, inUrl) {
 		//console.log(inUrl + " " + inUrl.match(/.*\:\/\//i));
 		if (inUrl.match(/.*\:\/\//i) == "verse://") {
@@ -163,15 +163,15 @@ enyo.kind({
 			this.doVerseTap();
 		} else if (inUrl.match(/.*\:\/\//i) == "note://") {
 			this.tappedNote = parseInt(inUrl.replace("note://","").split(":")[0]);
-			this.tappedVerse = parseInt(inUrl.replace("note://","").split(":")[1]);			
+			this.tappedVerse = parseInt(inUrl.replace("note://","").split(":")[1]);
 			this.popupTop = enyo.byId("note" + this.tappedNote).getBoundingClientRect().top;
 			this.popupLeft = enyo.byId("note" + this.tappedNote).getBoundingClientRect().left;
 			this.doShowNote();
 		}
-		
+
 		//this.$.versePopup.openAt({top: top, left: left});
 	},
-	
+
 	setNotes: function(notes) {
 		this.notes = notes;
 		//console.log(enyo.json.stringify(notes));
@@ -179,17 +179,17 @@ enyo.kind({
 			enyo.byId("noteIcon"+notes[i].vnumber).innerHTML = "<a href='note://" + i + ":" + notes[i].vnumber + "'><img id='note" + i + "' src='images/note.png' /></a>";
 		}
 	},
-	
+
 	setBookmarks: function(bookmarks) {
 		this.bookmarks = bookmarks;
 		//enyo.log(enyo.json.stringify(bookmarks));
 		//console.log(enyo.json.stringify(notes));
 		for (var i=0;i<bookmarks.length; i++) {
 			enyo.byId("bmIcon"+bookmarks[i].vnumber).innerHTML = "<a href='bookmark://" + i + ":" + bookmarks[i].vnumber + "'><img id='bookmark" + i + "' src='images/bookmark.png' /></a>";
-			
+
 		}
 	},
-	
+
 	setHighlights: function(highlights) {
 		this.highlights = highlights;
 		//enyo.log(enyo.json.stringify(highlights));
@@ -197,20 +197,20 @@ enyo.kind({
 			enyo.byId("verse"+highlights[i].vnumber).style.backgroundColor = highlights[i].color;
 		}
 	},
-	
+
 	setPlain: function (content) {
 		this.$.mainView.setContent(content);
 		this.log(content.length);
 	},
-	
+
 	setPrevChapter: function (passage) {
 		this.$.prevChapter.setContent("< " + passage);
 	},
-	
+
 	setNextChapter: function (passage) {
 		this.$.nextChapter.setContent(passage + " >");
 	},
-	
+
 	setFontSize: function (size) {
 		if (!enyo.fetchDeviceInfo().keyboardAvailable) {
 			this.$.mainView.addStyles("font-size: " + size + "px;");
@@ -221,25 +221,25 @@ enyo.kind({
 			var height = this.node.clientHeight - 40;
 			this.$.mainViewPhone.addStyles("height: " + height + "px;");
 		}
-		
+
 		if (this.vnumber !== 0) {this.setSnappers(this.vnumber)};
 	},
-	
+
 	setFont: function (font) {
 		if (!enyo.fetchDeviceInfo().keyboardAvailable) {
 			this.$.mainView.addStyles("font-family: " + font + ";");
 			var height = this.node.clientHeight - 40;
 			this.$.mainView.addStyles("height: " + height + "px;");
-		} else { 
+		} else {
 			this.$.mainViewPhone.addStyles("font-family: " + font + ";");
 			var height = this.node.clientHeight - 40;
 			this.$.mainViewPhone.addStyles("height: " + height + "px;");
 		}
-		
+
 		if (this.vnumber !== 0) {this.setSnappers(this.vnumber)};
 	},
-	
-	setSnappers: function (vnumber) {		
+
+	setSnappers: function (vnumber) {
 		var comp = this.getComponents()
 		for (var j=0;j<comp.length;j++) {
 			if (comp[j].name.search(/snapper\d+/) != -1) {
@@ -249,10 +249,10 @@ enyo.kind({
 		if(this.$.lastSnapper) {
 			this.$.lastSnapper.destroy();
 		}
-		
+
 		var height = this.node.clientHeight - 40;
 		var width = this.node.clientWidth - 40;
-		
+
 		//enyo.log(this.node.clientWidth, this.node.scrollWidth, this.node.scrollWidth - this.node.clientWidth - this.sidebarWidth, parseInt((this.node.scrollWidth - this.node.clientWidth - this.sidebarWidth) / this.node.clientWidth));
 		//enyo.log(this.$.mvContainer.node.clientWidth);
 		this.numberOfSnappers = (this.node.scrollWidth - this.node.clientWidth - this.sidebarWidth > this.node.clientWidth) ? parseInt((this.node.scrollWidth - this.node.clientWidth - this.sidebarWidth) / this.node.clientWidth) : 0;
@@ -271,7 +271,7 @@ enyo.kind({
 			this.$.mainScroller.addStyles("height: " + window.innerHeight + "px;");
 		}
 		this.$.prevChapter.show();
-		
+
 		if (vnumber && !enyo.fetchDeviceInfo().keyboardAvailable) {
 			this.setIndex(parseInt(enyo.byId(enyo.json.stringify(vnumber)).getBoundingClientRect().left / this.$.mainView.node.clientWidth) + 1);
 		} else if (vnumber && enyo.fetchDeviceInfo().keyboardAvailable) {
@@ -279,9 +279,9 @@ enyo.kind({
 		}
 		//enyo.log("CONTAINER: ", this.$.mvContainer.node.clientWidth, this.$.mvContainer.node.clientHeight);
 		//enyo.log("MAINVIEW: ", this.$.mainView.node.clientWidth, this.$.mainView.node.clientHeight);
-		
+
 	},
-	
+
 	windowRotated: function(inSender, inEvent) {
 		//inSender.log(window.innerHeight, window.innerWidth);
 		var height = this.node.clientHeight - 30;
@@ -296,7 +296,7 @@ enyo.kind({
 			this.$.mainScroller.addStyles("width: " + window.innerWidth + "px;");
 			this.$.mainScroller.addStyles("height: " + window.innerHeight + "px;");
 		}
-		
+
 		var comp = this.getComponents()
 		for (var j=0;j<comp.length;j++) {
 			if (comp[j].name.search(/snapper\d+/) != -1) {
@@ -308,11 +308,11 @@ enyo.kind({
 		}
 		if (!enyo.fetchDeviceInfo().keyboardAvailable) {
 			this.$.firstSnapper.addStyles("width: " + this.$.mainView.node.clientWidth + "px;");
-			if (this.$.lastSnapper)			
+			if (this.$.lastSnapper)
 				this.$.lastSnapper.addStyles("width: " + this.$.mainView.node.clientWidth + "px;");
 		} else {
 			this.$.firstSnapper.addStyles("width: " + window.innerWidth + "px;");
-			if (this.$.lastSnapper)			
+			if (this.$.lastSnapper)
 				this.$.lastSnapper.addStyles("width: " + window.innerWidth + "px;");
 		}
 		this.setIndex(this.index);
@@ -320,7 +320,7 @@ enyo.kind({
 		//enyo.log("CONTAINER: ", this.$.mvContainer.node.clientWidth, this.$.mvContainer.node.clientHeight);
 		//enyo.log("MAINVIEW: ", this.$.mainView.node.clientWidth, this.$.mainView.node.clientHeight);
 	},
-	
+
 	//WORKAROUND
 	snapto: function(ctx) {
 		if (enyo.fetchDeviceInfo().platformVersion == "3.0.0") {
@@ -328,7 +328,7 @@ enyo.kind({
 			this.snapTo(ctx);
 		} else {
 			this.snapTo(ctx);
-		}	
+		}
 	}
 });
 
@@ -380,26 +380,26 @@ enyo.kind({
 			]}
 		]}
 	],
-	
+
 	create: function () {
 		this.inherited(arguments);
 		this.$.rgBook.setCaption(this.book.abbrev);
 		this.$.rgChapter.setCaption(this.chapter);
 		this.$.rgVerse.setCaption(this.verse);
 	},
-	
+
 	getBook: function () {
 		return this.book;
 	},
-	
+
 	getChapter: function () {
 		return this.chapter;
 	},
-	
+
 	getVerse: function () {
 		return this.verse;
 	},
-	
+
 	getNextPassage: function () {
 		var nextBook = "";
 		var nextChapter = 0;
@@ -424,7 +424,7 @@ enyo.kind({
 		passage = (nextBook !== "" && nextChapter !== 0) ? nextBook.abbrev + " " + nextChapter : "End of Bible =)";
 		return {"passage": passage, "nextChapter": nextChapter, "nextBook": nextBook, "nextBnumber": nextBnumber};
 	},
-	
+
 	getPrevPassage: function () {
 		var prevBook = "";
 		var prevChapter = 0;
@@ -448,11 +448,11 @@ enyo.kind({
 		passage = (prevBook !== "" && prevChapter !== 0) ? prevBook.abbrev + " " + prevChapter : "Beginning of Bible =)";
 		return {"passage": passage, "prevChapter": prevChapter, "prevBook": prevBook, "prevBnumber": prevBnumber};
 	},
-	
+
 	setBookNames: function (bn) {
 		this.bookNames = bn;
 	},
-	
+
 	setCurrentPassage: function(passage) {
 		var book = passage.split(" ")[0];
 		this.chapter = passage.split(" ")[1];
@@ -465,7 +465,7 @@ enyo.kind({
 			}
 		}
 	},
-	
+
 	setRadioButton: function(inSender, inEvent) {
 		//console.log(this.$.selectorSnapper.index);
 		switch (this.$.selectorSnapper.index) {
@@ -486,7 +486,7 @@ enyo.kind({
 			break;
 		}
 	},
-	
+
 	changeSnapper: function (inSender, inEvent) {
 		switch (inSender.name) {
 			case "rgBook":
@@ -500,7 +500,7 @@ enyo.kind({
 			break;
 		}
 	},
-	
+
 	createSection: function (section, data) {
 		switch (section) {
 			case "books":
@@ -510,7 +510,7 @@ enyo.kind({
 					if (comp[j].name.search(/book\d+/) != -1) {
 						comp[j].destroy();
 					}
-				}		
+				}
 				//this.$.bookSelector.createComponent({name: "book1000", kind: "Divider", caption: "Old Testament"}, {owner: this});
 				for (var i=0;i<data.length;i++) {
 					kindName = "book" + i;
@@ -540,7 +540,7 @@ enyo.kind({
 					if (comp[j].name.search(/chapter\d+/) != -1) {
 						comp[j].destroy();
 					}
-				}				
+				}
 				for (var i=0;i<data;i++) {
 					kindName = "chapter" + i;
 					this.$.chapterSelector.createComponent({name: kindName, kind: "Button", caption: i+1, onclick: "handleChapters", className: "book-selector", book: this.book.name, chapter: i+1}, {owner: this});
@@ -554,7 +554,7 @@ enyo.kind({
 					if (comp[j].name.search(/verse\d+/) != -1) {
 						comp[j].destroy();
 					}
-				}				
+				}
 				for (var i=0;i<data;i++) {
 					kindName = "verse" + i;
 					this.$.verseSelector.createComponent({name: kindName, kind: "Button", caption: i+1, onclick: "handleVerses", className: "book-selector", verse: i+1}, {owner: this});
@@ -563,22 +563,22 @@ enyo.kind({
 			break;
 		}
 	},
-	
+
 	openSelector: function () {
 		this.open();
 		this.$.selectorSnapper.setIndex(0);
-		
+
 		//Set RadioButtons
 		this.$.rgBook.setDepressed(true);
 		this.$.rgChapter.setDepressed(false);
 		this.$.rgVerse.setDepressed(false);
-		
+
 		this.$.bookScroller.addStyles("height: " + this.$.selectorSnapper.node.clientHeight + "px;")
 		this.$.rgBook.setCaption(this.book.abbrev);
 		this.$.rgChapter.setCaption(this.chapter);
 		this.createSection("chapters", parseInt(this.book.cmax, 10));
 	},
-	
+
 	handleBooks: function (inSender, inEvent) {
 		this.book = this.bookNames[inSender.key];
 		this.bnumber = inSender.key;
@@ -591,7 +591,7 @@ enyo.kind({
 		this.$.chapterScroller.scrollTo(0,0);
 		this.createSection("chapters", parseInt(this.bookNames[inSender.key].cmax, 10));
 	},
-	
+
 	handleChapters: function (inSender, inEvent) {
 		this.chapter = (inSender.chapter) ? inSender.chapter : this.chapter;
 		this.$.rgChapter.setCaption(this.chapter);
@@ -599,14 +599,14 @@ enyo.kind({
 		this.$.verseScroller.scrollTo(0,0);
 		this.$.selectorSnapper.next();
 	},
-	
+
 	handleVerses: function (inSender, inEvent) {
 		this.verse = inSender.verse;
 		this.$.rgVerse.setCaption(this.verse);
 		this.doVerse();
 		this.close();
-	},	
-	
+	},
+
 	//WORKAROUND
 	snapto: function(ctx) {
 		if (enyo.fetchDeviceInfo().platformVersion == "3.0.0") {
@@ -693,7 +693,7 @@ enyo.kind({
 						{caption: $L("Multiword"), value: -2},
 						{caption: $L("Exact Phrase"), value: -1},
 					]}
-				]},				
+				]},
 				//{name: "searchProgress", kind: "ProgressBar"},
 				{name: "searchDivider", kind: "Divider", caption: $L("Results")},
 				{name: "searchSpinner", kind: "Spinner", style: "margin-left: auto; margin-right: auto;"},
@@ -713,12 +713,12 @@ enyo.kind({
 				{name: "rgBM", icon: "images/bookmarks.png", /*caption: $L("Bookmarks"), */ onclick: "changeView"},
 				{name: "rgNotes", icon: "images/notes.png", /*caption: $L("Notes"), */ onclick: "changeView"},
 				{name: "rgHighlight", icon: "images/highlights.png", onclick: "changeView"},
-				{name: "rgSearch", icon: "images/search.png", /*caption: $L("Bookmarks"), */ onclick: "changeView"}				
+				{name: "rgSearch", icon: "images/search.png", /*caption: $L("Bookmarks"), */ onclick: "changeView"}
 			]}
 			//{caption: "TEST"}
 		]}
 	],
-	
+
 	create: function () {
 		this.inherited(arguments);
 		this.windowRotated()
@@ -726,10 +726,10 @@ enyo.kind({
 		this.$.bmHint.hide();
 		this.$.hlHint.hide();
 		this.$.searchSpinner.hide();
-		
+
 		this.tappedItem = null;
 	},
-	
+
 	rendered: function () {
 		this.inherited(arguments);
 		//this.windowRotated()
@@ -737,16 +737,16 @@ enyo.kind({
 		this.getBookmarks();
 		this.getHighlights();
 	},
-	
+
 	setProgress: function (pos) {
 		this.$.searchProgress.setPosition(pos);
 	},
-	
+
 	getNotes: function () {
 		//this.$.spinner.show();
 		biblezTools.getNotes(-1,-1,enyo.bind(this, this.handleNotes));
 	},
-	
+
 	handleNotes: function (notes) {
 		//this.$.spinner.hide();
 		this.notes = notes;
@@ -755,9 +755,9 @@ enyo.kind({
 		} else {
 			this.$.noteHint.show();
 		}
-		this.$.noteList.render();		
+		this.$.noteList.render();
 	},
-	
+
 	getNoteListItem: function(inSender, inIndex) {
         var r = this.notes[inIndex];
         if (r) {
@@ -772,12 +772,12 @@ enyo.kind({
             return false;
         }
 	},
-	
+
 	getBookmarks: function () {
 		//this.$.spinner.show();
 		biblezTools.getBookmarks(-1,-1,enyo.bind(this, this.handleBookmarks));
 	},
-	
+
 	handleBookmarks: function (bm) {
 		//enyo.log(enyo.json.stringify(bm));
 		//this.$.spinner.hide();
@@ -789,14 +789,14 @@ enyo.kind({
 		}
 		this.$.bmList.render();
 	},
-	
+
 	getBmListItem: function(inSender, inIndex) {
         var r = this.bookmarks[inIndex];
         if (r) {
 			if (this.bookNames[parseInt(r.bnumber)]) {
 				this.$.bmPassage.setContent(this.bookNames[parseInt(r.bnumber)].abbrev + " " + r.cnumber + ":" + r.vnumber);
 			}
-            
+
 			var isRowSelected = (inIndex == this.tappedItem);
 			this.$.itemBm.applyStyle("background", isRowSelected ? "#3A8BCB" : null);
             return true;
@@ -804,13 +804,13 @@ enyo.kind({
             return false;
         }
 	},
-	
+
 	getHighlights: function () {
 		//enyo.log("GET HIGHLIGHTS...");
 		//this.$.spinner.show();
 		biblezTools.getHighlights(-1,-1,enyo.bind(this, this.handleHighlights));
 	},
-	
+
 	handleHighlights: function (hl) {
 		//enyo.log("GOT HIGHLIGHTS...");
 		//enyo.log(enyo.json.stringify(hl));
@@ -823,15 +823,15 @@ enyo.kind({
 		}
 		this.$.hlList.render();
 	},
-	
+
 	getHlListItem: function(inSender, inIndex) {
         var r = this.highlights[inIndex];
         if (r) {
 			if (this.bookNames[parseInt(r.bnumber)]) {
 				this.$.hlPassage.setContent(this.bookNames[parseInt(r.bnumber)].abbrev + " " + r.cnumber + ":" + r.vnumber);
 				this.$.itemHl.addStyles("background-color: " + r.color +";");
-			}		
-            
+			}
+
 			var isRowSelected = (inIndex == this.tappedItem);
 			this.$.itemHl.applyStyle("background", isRowSelected ? "#3A8BCB" : null);
             return true;
@@ -839,7 +839,7 @@ enyo.kind({
             return false;
         }
 	},
-	
+
 	scopeSelected: function(inSender) {
 		this.log("Selected button" + inSender.getValue());
 		//var scope = "";
@@ -855,11 +855,11 @@ enyo.kind({
 			break;
 		}
 	},
-	
+
 	typeChanged: function(inSender, inValue, inOldValue) {
 		this.searchType = inValue;
 	},
-	
+
 	inputKeydown: function(inSender, inEvent) {
 		if (inEvent.keyCode == 13) {
 			enyo.log("Search:", inSender.getValue());
@@ -872,7 +872,7 @@ enyo.kind({
 			this.doSearch();
 		}
 	},
-	
+
 	setSearchResults: function (results) {
 		this.results = results;
 		if (this.results.length > 1) {
@@ -885,7 +885,7 @@ enyo.kind({
 		this.$.searchList.render();
 		this.$.searchSpinner.hide();
 	},
-	
+
 	getSearchListItem: function(inSender, inIndex) {
 		//enyo.log(this.tappedItem);
         var r = this.results[inIndex];
@@ -898,7 +898,7 @@ enyo.kind({
             return false;
         }
 	},
-	
+
 	changeView: function (inSender, inEvent) {
 		var oldTappedItem = this.tappedItem;
 		this.tappedItem = undefined;
@@ -922,7 +922,7 @@ enyo.kind({
 			break;
 		}
 	},
-	
+
 	goToVerse: function(inSender, inEvent, rowIndex) {
 		switch (inSender.name) {
 			case "itemNote":
@@ -948,27 +948,27 @@ enyo.kind({
 				this.$.searchList.render();
 				this.passage = this.results[rowIndex].abbrev + " " + this.results[rowIndex].cnumber;
 				this.verse = parseInt(this.results[rowIndex].vnumber);
-			break;		
+			break;
 		}
 		enyo.log(this.passage, this.verse);
 		this.doVerse();
 	},
-	
+
 	deleteNote: function (inSender, inIndex) {
 		this.verse = this.notes[inIndex].vnumber;
 		biblezTools.removeNote(this.notes[inIndex].bnumber, this.notes[inIndex].cnumber, this.notes[inIndex].vnumber, enyo.bind(this, this.handleDelete, "notes", $L("Note")));
 	},
-	
+
 	deleteBookmark: function (inSender, inIndex) {
 		this.verse = this.bookmarks[inIndex].vnumber;
 		biblezTools.removeBookmark(this.bookmarks[inIndex].bnumber, this.bookmarks[inIndex].cnumber, this.bookmarks[inIndex].vnumber, enyo.bind(this, this.handleDelete, "bookmarks", $L("Bookmark")));
 	},
-	
+
 	deleteHighlight: function (inSender, inIndex) {
 		this.verse = this.highlights[inIndex].vnumber;
 		biblezTools.removeHighlight(this.highlights[inIndex].bnumber, this.highlights[inIndex].cnumber, this.highlights[inIndex].vnumber, enyo.bind(this, this.handleDelete, "highlights", $L("Highlight")));
 	},
-	
+
 	handleDelete: function (list, item) {
 		enyo.windows.addBannerMessage($L("Deleted") + " " + item, enyo.json.stringify({}));
 		if (list == "notes") {
@@ -984,13 +984,13 @@ enyo.kind({
 			enyo.byId("verse"+this.verse).style.backgroundColor = "transparent";
 		}
 	},
-	
+
 	bookNamesChanged: function () {
 		this.$.bmList.render();
 		this.$.noteList.render();
 		this.$.hlList.render();
 	},
-	
+
 	windowRotated: function(inSender) {
 		//enyo.log("HEIGHT:", window.innerHeight, window.innerWidth, this.$.sidebarPane.height);
 		if (!enyo.fetchDeviceInfo().keyboardAvailable) {
@@ -999,6 +999,6 @@ enyo.kind({
 			} else {
 				this.setStyle("height: 940px;");
 			}
-		}		
+		}
 	}
 })

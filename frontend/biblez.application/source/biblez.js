@@ -38,6 +38,7 @@ enyo.kind({
 		{name: "versePopup", kind: "BibleZ.VersePopup", className: "verse-popup", onOpen: "hideColors", onNote: "handleNote", onBookmark: "handleBookmark", onHighlight: "handleHighlight"},
 		{name: "fontMenu", kind: "BibleZ.FontMenu", onFontSize: "changeFontSize", onFont: "changeFont"},
 		{name: "biblezAbout", kind: "BibleZ.About"},
+		{name: "pro", kind: "BibleZ.Pro"},
 		{name: "mainPane", flex: 1, kind: "Pane", transitionKind: "enyo.transitions.Simple", onSelectView: "viewSelected", components: [
 			{name: "verseView", kind: "VFlexBox", flex: 1, components: [
 				{name: "mainToolbar", kind: "Toolbar", components: [
@@ -124,6 +125,10 @@ enyo.kind({
 		this.inherited(arguments);
 		if (enyo.fetchDeviceInfo().keyboardAvailable)
 			this.$.btSidebar.setToggling(false);
+
+		if (enyo.getCookie("biblezpro") && !enyo.fetchDeviceInfo().keyboardAvailable) {
+			this.$.pro.openAtCenter();
+		}
 	},
 
 	//SERVICE STUFF
@@ -216,9 +221,9 @@ enyo.kind({
 	getNotes: function() {
 		biblezTools.getNotes(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.mainView, this.$.mainView.setNotes));
         if (!enyo.fetchDeviceInfo().keyboardAvailable)
-        	biblezTools.getNotes(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleNotes));
+			biblezTools.getNotes(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleNotes));
         else
-        	biblezTools.getNotes(-1,-1,enyo.bind(this.$.sidebarView, this.$.sidebarView.handleNotes));
+			biblezTools.getNotes(-1,-1,enyo.bind(this.$.sidebarView, this.$.sidebarView.handleNotes));
 	},
 
 	openShowNote: function (inSender, inEvent) {
@@ -249,9 +254,9 @@ enyo.kind({
 	getBookmarks: function() {
 		biblezTools.getBookmarks(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.mainView, this.$.mainView.setBookmarks));
         if (!enyo.fetchDeviceInfo().keyboardAvailable)
-        	biblezTools.getBookmarks(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleBookmarks));
+			biblezTools.getBookmarks(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleBookmarks));
         else
-        	biblezTools.getBookmarks(-1,-1,enyo.bind(this.$.sidebarView, this.$.sidebarView.handleBookmarks));
+			biblezTools.getBookmarks(-1,-1,enyo.bind(this.$.sidebarView, this.$.sidebarView.handleBookmarks));
 	},
 
 	handleHighlight: function (inSender, inEvent) {
@@ -268,9 +273,9 @@ enyo.kind({
 	getHighlights: function() {
 		biblezTools.getHighlights(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.mainView, this.$.mainView.setHighlights));
         if (!enyo.fetchDeviceInfo().keyboardAvailable)
-        	biblezTools.getHighlights(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleHighlights));
+			biblezTools.getHighlights(-1,-1,enyo.bind(this.$.noteBmSidebar, this.$.noteBmSidebar.handleHighlights));
         else
-        	biblezTools.getHighlights(-1,-1,enyo.bind(this.$.sidebarView, this.$.sidebarView.handleHighlights));
+			biblezTools.getHighlights(-1,-1,enyo.bind(this.$.sidebarView, this.$.sidebarView.handleHighlights));
 	},
 
 	hideColors: function (inSender, inEvent) {

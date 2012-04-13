@@ -328,7 +328,7 @@ enyo.kind({
            {content: $L("About ") + enyo.fetchAppInfo().title, className: "popup-title"},
            {content: "Version " + enyo.fetchAppInfo().version, className: "popup-version"},
            {style: "text-align: center;", components:[{kind: "Image", style: "width: 80px;", src: "images/biblezHD128.png"}]},
-           {content: $L("BibleZ HD is based on the") + " <a href='http://www.crosswire.org/sword'>" + $L("SWORD Project") + "</a>. " + $L("and it is licensed under") + " <a href='http://www.gnu.org/licenses/gpl.txt'>GPLv3</a>.<br>&copy; 2010-2011 by <a href='http://zefanjas.de'>zefanjas.de</a>", className: "popup-info"},
+           {content: $L("BibleZ HD is based on the") + " <a href='http://www.crosswire.org/sword'>" + $L("SWORD Project") + "</a>. " + $L("and it is licensed under") + " <a href='http://www.gnu.org/licenses/gpl.txt'>GPLv3</a>.<br>&copy; 2010-2012 by <a href='http://zefanjas.de'>zefanjas.de</a>", className: "popup-info"},
            {style: "text-align: center;", components:[{content: "<a href='http://www.facebook.com/pages/zefanjas/118603198178545'><img src='images/facebook_32.png'/></a>  <a href='http://twitter.com/biblez'><img src='images/twitter_32.png'/></a>"}]},
            {kind: "Button", flex: 1, caption: $L("Send eMail"), onclick: "sendMail"},
            {kind: "Button", flex: 1, caption: $L("Close"), onclick: "doCancel"}
@@ -353,5 +353,33 @@ enyo.kind({
                   }]
               }
         });
+    }
+});
+
+enyo.kind({
+    name: "BibleZ.Pro",
+    scrim: true,
+    dismissWithClick: false,
+    width: "400px",
+    kind: "Popup", components: [
+        {kind: "BasicScroller", autoVertical: true, style: "height: auto;", flex: 1, components: [
+            {content: $L("BibleZ HD Pro - Upgrade Now"), className: "popup-title"},
+            {style: "font-size: 0.8em; margin-top: 10px;", content: "BibleZ HD Pro is finally available in the App Catalog! Tap the bottom below to open the App Catalog and check out all the new features and improvements!<p>A quick overview:</p><ul><li>Support for commentaries</li><li>Search notes, bookmarks and highlights and organize them with tags and folders</li><li>Split view</li><li>Footnotes, cross-references</li><li>Strongs</li><li>...</li></ul>", allowHtml: true},
+            {kind: "HFlexBox", components: [
+                {kind: "Button", flex: 1, caption: $L("Close"), onclick: "doCancel"},
+                {kind: "Button", flex: 1, caption: $L("Get BibleZ HD Pro"), onclick: "openAppCat", className: "enyo-button-affirmative"}
+            ]}
+        ]}
+
+    ],
+
+    openAppCat: function () {
+        window.location = "http://developer.palm.com/appredirect/?packageid=de.zefanjas.biblezhdpro";
+        this.doCancel();
+    },
+
+    doCancel: function () {
+        enyo.setCookie("biblezpro", "false");
+        this.close();
     }
 });

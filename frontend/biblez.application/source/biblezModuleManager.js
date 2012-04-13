@@ -1,15 +1,15 @@
 /*### BEGIN LICENSE
 # Copyright (C) 2011 Stephan Tetzel <info@zefanjas.de>
-# This program is free software: you can redistribute it and/or modify it 
-# under the terms of the GNU General Public License version 3, as published 
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 3, as published
 # by the Free Software Foundation.
-# 
-# This program is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranties of 
-# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranties of
+# MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR
 # PURPOSE.  See the GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License along 
+#
+# You should have received a copy of the GNU General Public License along
 # with this program.  If not, see <http://www.gnu.org/licenses/>.
 ### END LICENSE*/
 
@@ -47,7 +47,7 @@ enyo.kind({
 			{content: $L("Module Manager")},
 			{kind: "Spacer"},
 			{kind: "Spinner", showing: true}
-			
+
 		]},
 		{name: "slidingPane", kind: "SlidingPane", flex: 1, components: [
 			{name: "left", width: "320px", kind:"SlidingView", components: [
@@ -102,15 +102,15 @@ enyo.kind({
 						{name: "detailsCopyright", className: "details-info"},
 						{name: "detailsLicense", className: "details-info"},
 						{name: "detailsAVN", className: "details-info"}
-					]}					
+					]}
                 ]},
                 {kind: "Toolbar", components: [
-                    {kind: "GrabButton"}					
+                    {kind: "GrabButton"}
                 ]}
 			]}
 		]}
 	],
-    
+
     create: function () {
         this.inherited(arguments);
 		this.lang = [];
@@ -130,13 +130,13 @@ enyo.kind({
                 enyo.application.modManViewLeft = true;
         }
     },
-	
+
 	refreshModules: function (inSender, inEvent) {
 		this.$.spinner.show();
 		enyo.windows.addBannerMessage($L("Downloading List of available Modules..."), enyo.json.stringify({}));
         this.$.DownloadMgr.call({target: "http://www.crosswire.org/ftpmirror/pub/sword/raw/mods.d.tar.gz", targetDir: "/media/internal/.sword/install"});
 	},
-    
+
     downloadMods: function(update) {
 		//console.log(enyo.json.stringify(this.dbSets["lastModUpdate"]));
         if (!this.dbSets.lastModUpdate) {
@@ -148,7 +148,7 @@ enyo.kind({
 			this.getLang();
 		}
     },
-	
+
 	downloadAddIn: function () {
 		this.$.btInstall.setPosition(0);
 		this.$.btInstallCaption.setContent($L("Installing..."));
@@ -156,11 +156,11 @@ enyo.kind({
 		console.log(url);
 		this.$.DownloadMgr.call({target: url, targetDir: "/media/internal/.sword/install"});
 	},
-    
+
     updateStatus: function (inSender, inResponse) {
-        this.log("STATUS", enyo.json.stringify(inResponse));    
+        this.log("STATUS", enyo.json.stringify(inResponse));
     },
-    
+
     downloadFinished: function (inSender, inResponse) {
 		console.log(enyo.json.stringify(inResponse));
 		this.$.btInstall.setMaximum(inResponse.amountTotal);
@@ -176,25 +176,25 @@ enyo.kind({
 				this.modulePath = inResponse.target;
 				this.doUnzip();
 			}
-			
+
         } else {
             this.log("INFO", "Downloading");
         }
     },
-	
+
 	getLang: function () {
 		//this.$.langList.render();
 		//console.log("Getting languages...");
 		biblezTools.getLang("crosswire", enyo.bind(this, this.setLang));
 	},
-	
+
 	setLang: function(lang) {
 		//console.log(lang);
 		this.lang = lang;
 		this.$.langList.render();
 		this.$.spinner.hide();
 	},
-	
+
 	getLangListItem: function(inSender, inIndex) {
         var r = this.lang[inIndex];
 		this.tmpLang = "";
@@ -202,7 +202,7 @@ enyo.kind({
 			//console.log(r + " - " + this.tmpLang);
 			this.$.langCode.setContent(r);
 			this.$.langName.setContent((languages[r]) ? (languages[r]) : r);
-            
+
 			var isRowSelected = (inIndex == this.lastLangItem);
 			this.$.itemLang.applyStyle("background", isRowSelected ? "#3A8BCB" : null);
             return true;
@@ -210,7 +210,7 @@ enyo.kind({
             return false;
         }
     },
-	
+
 	getModules: function (inSender, inEvent, rowIndex) {
 		if (enyo.fetchDeviceInfo().keyboardAvailable) {
             this.$.slidingPane.selectViewByName("middle");
@@ -222,9 +222,9 @@ enyo.kind({
 		this.lastLangItem = rowIndex;
 		this.lastModItem = null;
 		this.$.langList.render();
-		this.$.scrollerMiddle.scrollTo(0,0);        
+		this.$.scrollerMiddle.scrollTo(0,0);
 	},
-	
+
 	setModules: function (modules) {
 		//console.log(modules);
 		this.modules = modules;
@@ -235,18 +235,18 @@ enyo.kind({
 			this.$.modHint.show();
 			this.$.modHint.setContent($L("No Module available"));
 		}
-		
+
 	},
-	
+
 	setInstalledModules: function (modules) {
 		this.installedModules = modules;
 	},
-	
+
 	getModListItem: function(inSender, inIndex) {
         var r = this.modules[inIndex];
         if (r) {
 			this.$.modName.setContent(r.modName);
-            
+
 			var isRowSelected = (inIndex == this.lastModItem);
 			this.$.itemMod.applyStyle("background", isRowSelected ? "#3A8BCB" : null);
             return true;
@@ -254,7 +254,7 @@ enyo.kind({
             return false;
         }
     },
-	
+
 	getDetails: function (inSender, inEvent, rowIndex) {
 		//this.$.spinner.show();
 		if (enyo.fetchDeviceInfo().keyboardAvailable) {
@@ -269,14 +269,14 @@ enyo.kind({
 		this.doGetDetails();
 
 	},
-	
+
 	showDetails: function (details) {
 		this.$.btInstall.show();
 		this.$.btRemove.hide();
 		this.$.btInstallCaption.setContent($L("Install"));
 		this.$.btInstall.setMaximum(100);
 		this.$.btInstall.setPosition(100);
-		
+
 		this.$.detailsName.setContent(details.name);
 		this.$.detailsDescription.setContent(details.description);
 		this.$.detailsAbout.setContent(details.about.replace(/\\par/g, "<br>"));
@@ -287,7 +287,7 @@ enyo.kind({
 		//this.$.detailsType.setContent($L("Type") + ": " + details.category);
 		//var tmpLang = (languages[details.lang]) ? (languages[details.lang]) : details.lang;
 		//this.$.detailsLang.setContent($L("Language") + ": " + tmpLang);
-		
+
 		for(var i=0;i<this.installedModules.length;i++) {
 			if(this.installedModules[i].name ==  details.name) {
 				this.$.btInstall.hide();
@@ -295,17 +295,17 @@ enyo.kind({
 				this.moduleToRemove = this.installedModules[i];
 			}
 		}
-		
+
 		this.$.detailsContainer.show();
 		//this.$.spinner.hide();
 	},
-	
+
 	removeModule: function(inSender, inEvent) {
 		this.doRemove();
 		this.$.btInstall.show();
 		this.$.btRemove.hide();
 	},
-	
+
 	stopSpinner: function () {
 		this.$.spinner.hide();
 	}
