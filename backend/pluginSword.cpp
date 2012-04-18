@@ -145,6 +145,7 @@ void refreshManagers() {
     displayLibrary->setGlobalOption("Footnotes","On");
 	displayLibrary->setGlobalOption("Headings", "On");
 	displayLibrary->setGlobalOption("Strong's Numbers", "On");
+	displayLibrary->setGlobalOption("Words of Christ in Red","Off");
 }
 
 /*INSTALL MANAGER STUFF */
@@ -805,13 +806,13 @@ PDL_bool getBooknames(PDL_JSParameters *parms) {
 	SWModule *module = displayLibrary->getModule(moduleName);
 	if (!module) {
 		PDL_JSException(parms, "getBooknames: Couldn't find Module");
-		return PDL_FALSE;  // assert we found the module
+		return PDL_TRUE;  // assert we found the module
 	}
 
 	VerseKey *vkey = dynamic_cast<VerseKey *>(module->getKey());
 	if (!vkey) {
 		PDL_JSException(parms, "getBooknames: Couldn't find verse!");
-		return PDL_FALSE;    // assert our module uses verses
+		return PDL_TRUE;    // assert our module uses verses
 	}
 
 	VerseKey &vk = *vkey;
@@ -838,6 +839,16 @@ PDL_bool getBooknames(PDL_JSParameters *parms) {
 	//params[0] = cstr;
 	//PDL_Err mjErr = PDL_CallJS("returnBooknames", params, 1);
 	PDL_Err mjErr = PDL_JSReply(parms, tmp.c_str());
+    return PDL_TRUE;
+}
+
+PDL_bool setGlobalOption(PDL_JSParameters *parms) {
+	const char* option = PDL_GetJSParamString(parms, 0);
+	const char* value = PDL_GetJSParamString(parms, 0);
+
+	displayLibrary->setGlobalOption(option, value);
+
+	PDL_Err mjErr = PDL_JSReply(parms, "{returnValue: true}");
     return PDL_TRUE;
 }
 
@@ -935,246 +946,6 @@ PDL_bool getVMax(PDL_JSParameters *parms) {
     return PDL_TRUE;
 }
 
-PDL_bool untarMods(PDL_JSParameters *parms) {
-	const char* pathMods = PDL_GetJSParamString(parms, 0);
-	std::stringstream pathBuilder;
-	std::stringstream errString;
-	pathBuilder << "tar -xzf " << pathMods << " -C /media/internal/.sword/install/";
-	const std::string& tmp = pathBuilder.str();
-	const char* cstr = tmp.c_str();
-
-	int err = system(cstr);
-	if (err != 0) {
-		PDL_JSException(parms, "untarMods: Couldn't untar Module");
-		return PDL_FALSE;
-	}
-
-	errString << err;
-	const std::string& tmp2 = errString.str();
-	const char* cstr2 = tmp2.c_str();
-
-    const char *params[1];
-	params[0] = cstr2;
-	PDL_Err mjErr = PDL_CallJS("returnUntar", params, 1);
-    return PDL_TRUE;
-}
-
-/*PDL_bool removeModule(PDL_JSParameters *parms) {
-	const char* pathMod = PDL_GetJSParamString(parms, 0);
-	const char* modName = PDL_GetJSParamString(parms, 1);
-
-	std::stringstream pathBuilder;
-	std::stringstream errString;
-
-	pathBuilder << "rm -R " << "/media/internal/.sword/" << pathMod;
-	int err1 = system(pathBuilder.str().c_str());
-
-	pathBuilder.str("");
-	pathBuilder << "rm " << "/media/internal/.sword/mods.d/" << modName << ".conf";
-	int err2 = system(pathBuilder.str().c_str());
-
-	//Refresh Mgr
-	refreshManagers();
-
-	const std::string& tmp = errString.str();
-	const char* cstr = tmp.c_str();
-
-    const char *params[1];
-	params[0] = cstr;
-	PDL_Err mjErr = PDL_CallJS("returnRemove", params, 1);
-    return PDL_TRUE;
-} */
-
-PDL_bool checkPlugin(PDL_JSParameters *parms) {
-	const char *params[1];
-	params[0] = "Yes";
-	PDL_Err mjErr = PDL_CallJS("returnVerses", params, 1);
-    return PDL_TRUE;
-}
-
-PDL_bool readConfs(PDL_JSParameters *parms) {
-	/*Get information about all available modules*/
-	std::stringstream mods;
-
-	SWMgr confReader("/media/internal/.sword/install", new MarkupFilterMgr(FMT_HTMLHREF));
-	ModMap::iterator it;
-
-	mods << "[";
-
-	for (it = confReader.Modules.begin(); it != confReader.Modules.end(); it++) {
-		SWModule *module = it->second;
-		if (it != confReader.Modules.begin()) {
-			mods << ", ";
-		}
-		mods << "{\"name\": \"" << module->Name() << "\", ";
-		if (module->getConfigEntry("Lang")) {
-			mods << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
-		}
-		mods << "\"datapath\": \"" << module->getConfigEntry("DataPath") << "\", ";
-		mods << "\"description\": \"" << module->getConfigEntry("Description") << "\"}";
-	}
-
-
-	/*std::string dir = std::string("/media/internal/.sword/install/mods.d/");
-    std::vector<std::string> files = std::vector<std::string>();
-
-    getdir(dir,files);
-
-    for (unsigned int i = 2;i < files.size();i++) {
-		path = dir + files[i];
-		//std::cout << path << std::endl;
-        infile.open(path.c_str()); // open file
-		if(infile) {
-			//std::cout << "OK" << std::endl;
-			mods << "{";
-			std::string line="";
-			std::string key="";
-			while(getline(infile, line, '\n')) {
-				if (line.find("=") !=  std::string::npos) {
-					splitstring(line, "=", key, value);
-					if (key.find("Lang") !=  std::string::npos) {
-						mods << ", \"" << UpToLow(key) << "\": \"" << convertString(value) << "\"";
-					} else if (key.find("DataPath") !=  std::string::npos) {
-						mods << ", \"" << UpToLow(key) << "\": \"" << convertString(value) << "\"";
-					} else if (key.find("Description") !=  std::string::npos) {
-						mods << ", \"" << UpToLow(key) << "\": \"" << convertString(value) << "\"";
-					}
-				} else {
-					if (line.find("[") != std::string::npos && line.find("]") != std::string::npos) {
-						line.erase(line.find("]"),1);
-						mods << "\"name\": \"" << convertString(line.erase(0,1)) << "\"";
-					}
-				}
-			}
-			if (i+1 != files.size()) {
-				mods << "}, ";
-			} else {
-				mods << "}";
-			}
-
-			infile.close();
-		}
-    } */
-
-	mods << "]";
-
-	const std::string& tmp = mods.str();
-	const char* cstr = tmp.c_str();
-
-	const char *params[1];
-	params[0] = cstr;
-	PDL_Err mjErr = PDL_CallJS("returnReadConfs", params, 1);
-    return PDL_TRUE;
-}
-
-PDL_bool unzipModule(PDL_JSParameters *parms) {
-	const char* pathModule = PDL_GetJSParamString(parms, 0);
-	uLong i;
-    unz_global_info64 gi;
-    int err;
-    FILE* fout=NULL;
-	uInt size_buf = WRITEBUFFERSIZE;  // byte size of buffer to store raw csv data
-    void* buf;                        // the buffer
-    char filename_inzip[256];         // for unzGetCurrentFileInfo
-    unz_file_info file_info;          // for unzGetCurrentFileInfo
-	std::string tmpPath = "";
-	std::string writeFilename = "";
-	std::string pathPrefix = "/media/internal/.sword/";
-	std::string sout;
-	std::stringstream pathBuilder;
-	unzFile uf=NULL;
-
-	uf = unzOpen(pathModule);
-
-    err = unzGetGlobalInfo64(uf,&gi);
-
-	if (err!=UNZ_OK)
-        std::cout << "error with zipfile in unzGetGlobalInfo \n";
-
-	//std::cout << gi.number_entry << "\n";
-
-	for (i=0;i<gi.number_entry;i++) {
-		tmpPath = "";
-		writeFilename = "";
-		err = unzGetCurrentFileInfo(uf,&file_info,filename_inzip,sizeof(filename_inzip),NULL,0,NULL,0);
-
-		//std::cout << filename_inzip << std::endl;
-
-		const std::vector<std::string> words = split(filename_inzip, "/");
-		for (int j = 0; j < words.size()-1; j++) {
-			tmpPath = tmpPath + words[j] + "/";
-			/*if(j<words.size()-1) {
-				tmpPath = tmpPath + words[j] + "/";
-			} else {
-				writeFilename = words[j];
-			}*/
-		}
-
-		pathBuilder.str("");
-		pathBuilder << "mkdir -p " << pathPrefix << tmpPath;
-		const std::string& tmp = pathBuilder.str();
-		const char* cstr = tmp.c_str();
-
-		writeFilename = pathPrefix + filename_inzip;
-
-		std::cout << writeFilename << std::endl;
-
-		err = system(cstr);
-
-
-		buf = (void*)malloc(size_buf); // setup buffer
-		if (buf==NULL) {
-			std::cerr << "Error allocating memory for read buffer" << std::endl;
-		} // buffer ready
-
-		err = unzOpenCurrentFile(uf); // Open the file inside the zip (password = NULL)
-		if (err!=UNZ_OK) {
-			std::cerr << "Error " << err << " with zipfile in unzOpenCurrentFilePassword." << std::endl;
-		} // file inside the zip is open
-
-
-		std::ofstream fout(writeFilename.c_str(), std::ios::binary);
-
-		do {
-			err = unzReadCurrentFile(uf,buf,size_buf);
-			if (err<0) {
-				std::cerr << "Error " << err << " with zipfile in unzReadCurrentFile" << std::endl;
-				break;
-			}
-			//std::cout << err << ":" << size_buf << std::endl;
-			fout.write((const char*)buf,err);
-			//if (err>0) for (int i = 0; i < (int) err; i++) fout.write((char*)&buf[i],sizeof(&buf[i]);
-		} while (err>0);
-
-		fout.close();
-
-		err = unzCloseCurrentFile (uf);  // close the zipfile
-		if (err!=UNZ_OK) {
-				std::cerr << "Error " << err << " with zipfile in unzCloseCurrentFile" << std::endl;
-			}
-
-
-
-        if ((i+1)<gi.number_entry) {
-            err = unzGoToNextFile(uf);
-            if (err!=UNZ_OK) {
-                std::cout << "error with zipfile in unzGoToNextFile\n";
-                break;
-            }
-        }
-    }
-
-	free(buf); // free up buffer memory
-
-	//Refresh Mgr
-	refreshManagers();
-
-	const char *params[1];
-	params[0] = "true";
-	PDL_Err mjErr = PDL_CallJS("returnUnzip", params, 1);
-    return PDL_TRUE;
-}
-
 int main () {
 	//Basic settings
 	system("mkdir -p /media/internal/.sword/mods.d/");
@@ -1198,15 +969,12 @@ int main () {
     PDL_RegisterJSHandler("getModules", getModules);
 	PDL_RegisterJSHandler("getVerses", getVerses);
 	PDL_RegisterJSHandler("getStrong", getStrong);
-	PDL_RegisterJSHandler("checkPlugin", checkPlugin);
 	PDL_RegisterJSHandler("getBooknames", getBooknames);
 	PDL_RegisterJSHandler("getVMax", getVMax);
-	PDL_RegisterJSHandler("untarMods", untarMods);
-	PDL_RegisterJSHandler("unzipModule", unzipModule);
-	//PDL_RegisterJSHandler("removeModule", removeModule);
-	PDL_RegisterJSHandler("readConfs", readConfs);
 	PDL_RegisterJSHandler("getModuleDetails", getModuleDetails);
     PDL_RegisterJSHandler("search", search);
+    PDL_RegisterJSHandler("setGlobalOption", setGlobalOption);
+
     //InstallMgr
     PDL_RegisterJSHandler("syncConfig", callSyncConfig);
     PDL_RegisterJSHandler("listRemoteSources", listRemoteSources);

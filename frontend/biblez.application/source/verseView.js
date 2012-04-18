@@ -89,7 +89,7 @@ enyo.kind({
     //VERSES STUFF
 
     setVerses: function (verses, vnumber) {
-        //enyo.log("Set verses...");
+        //enyo.log("Set verses...", vnumber);
         this.$.plain.hide();
         this.$.view.show();
         this.vnumber = vnumber;
@@ -189,6 +189,11 @@ enyo.kind({
     setHighlights: function(highlights) {
         highlights = (typeof highlights === "string") ? enyo.json.parse(highlights) : highlights;
         var verseID = (this.view === "main") ? "verse" : "verseSplit";
+        if (this.view === "main")
+            biblez.mainHL = highlights;
+        else
+            biblez.splitHL = highlights;
+
         for (var i=0;i<highlights.length; i++) {
             enyo.byId(verseID+highlights[i].vnumber).style.backgroundColor = highlights[i].color;
         }
@@ -277,7 +282,7 @@ enyo.kind({
                         this.$.mainScroller.scrollIntoView(realPos.y-150, 0);
                     }
                 } else {
-                    this.verseSnapper.setIndex(1);
+                    this.$.verseSnapper.setIndex(1);
                 }
             } else if (vnumber && vnumber === -1) {
                 this.$.verseSnapper.setIndex(this.numberOfSnappers+1);

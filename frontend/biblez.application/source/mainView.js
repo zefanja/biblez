@@ -21,14 +21,15 @@ enyo.kind({
         //{kind: "ApplicationEvents", onWindowRotated: "windowRotated"},
         //{kind: "ApplicationEvents", onUnload: "saveSettings"},
         {name: "notePopup", kind: "BibleZ.AddNote", onAddNote: "addNote", onEditNote: "handleEditNote"},
-        {name: "noteView", kind: "BibleZ.ShowNote", onNoteTap: "handleEditNote", style: "min-width: 100px; max-width: 300px;"},
+        {name: "noteView", kind: "BibleZ.ShowNote", onNoteTap: "handleEditNote", onCrossRefTap: "handleCrossRefTap", style: "min-width: 100px; max-width: 300px;"},
         {name: "versePopup", kind: "BibleZ.VersePopup", className: "verse-popup",
             //onOpen: "hideColors",
             onNote: "handleNote",
             onBookmark: "handleBookmark",
             onEditBookmark: "handleEditBookmark",
             onHighlight: "handleHighlight",
-            onRelease: "handleMouseRelease"
+            onRelease: "handleMouseRelease",
+            onRemoveHighlight: "handleRemoveHighlight"
         },
         {name: "fontMenu", kind: "BibleZ.FontMenu", onFontSize: "changeFontSize", onFont: "changeFont", onSync: "changeSync", onScrolling: "changeScrolling"},
         {name: "historyMenu", kind: "Menu", lazy: false},
@@ -98,6 +99,7 @@ enyo.kind({
         onGoToMain: "",
         onWelcome: "",
         onSync: "",
+        onMainVerse: "",
         onSplitVerse: "",
         onSearch: "",
         onGetStrong: "",
@@ -119,6 +121,7 @@ enyo.kind({
     currentCrossRef: false,
     currentStrong: null,
     inWait: false,
+    firstStart: true,
     updateStuff: true,
 
     create: function () {
@@ -172,6 +175,7 @@ enyo.kind({
 
     handleGetModules: function (modules, inWait) {
         this.inWait = inWait;
+        var found = false;
         //enyo.log(modules);
         modules = (typeof modules === "string") ? enyo.json.parse(modules) : modules;
         biblez.modules = modules;
@@ -180,10 +184,12 @@ enyo.kind({
             for (var i=0;i<modules.length;i++) {
                 if (modules[i].modType === "Biblical Texts" || modules[i].modType === "Commentaries")
                     tmpMods.push(modules[i]);
+                if (this.currentModule && modules[i].name === this.currentModule.name)
+                    found = true;
             }
 
             if (tmpMods.length !== 0) {
-                if(!this.currentModule)
+                if(!this.currentModule || !found)
                     this.currentModule = tmpMods[0];
 
                 this.$.library.setCurrentModule(this.currentModule);
@@ -208,20 +214,25 @@ enyo.kind({
             this.$.selector.setCurrentPassage(enyo.json.parse(enyo.getCookie("passage")));
         //this.getVerses();
 
-        //Load Font Settings
-        if (enyo.getCookie("font")) {
-            biblez.currentFont = enyo.json.parse(enyo.getCookie("font"));
-            this.$.fontMenu.setFont(biblez.currentFont);
-            this.$.verseView.setFont(biblez.currentFont);
-        }
-        if (enyo.getCookie("fontSize")) {
-            biblez.currentFontSize = enyo.json.parse(enyo.getCookie("fontSize"));
-            this.$.fontMenu.setFontSize(biblez.currentFontSize);
-            this.$.verseView.setFontSize(biblez.currentFontSize);
-        }
 
-        //Go to verseView (app.js)
-        this.doGoToMain(this.inWait);
+        if (this.firstStart) {
+            enyo.log("Load Font Settings...");
+            this.firstStart = false;
+            //Load Font Settings
+            if (enyo.getCookie("font")) {
+                biblez.currentFont = enyo.json.parse(enyo.getCookie("font"));
+                this.$.fontMenu.setFont(biblez.currentFont);
+                this.$.verseView.setFont(biblez.currentFont);
+            }
+            if (enyo.getCookie("fontSize")) {
+                biblez.currentFontSize = enyo.json.parse(enyo.getCookie("fontSize"));
+                this.$.fontMenu.setFontSize(biblez.currentFontSize);
+                this.$.verseView.setFontSize(biblez.currentFontSize);
+            }
+
+            //Go to verseView (app.js)
+            this.doGoToMain(this.inWait);
+        }
         this.inWait = false;
     },
 
@@ -279,8 +290,9 @@ enyo.kind({
             } else {
                 this.$.noteView.setNote(api.renderVerses(tmpVerses, 1, this.view, true));
                 this.$.noteView.setCaption(tmpPassage.passageSingle);
+                this.$.noteView.setPassage(tmpPassage);
                 this.$.noteView.openAt({top: this.currentCrossRef.top, left: this.currentCrossRef.left}, true);
-                this.$.noteView.setShowType("footnote");
+                this.$.noteView.setShowType("crossRef");
             }
         } else {
             this.$.verseView.setPlain($L("The chapter is not available in this module! :-("));
@@ -354,7 +366,7 @@ enyo.kind({
         //enyo.log(inSender.currentModule);
         this.currentModule = inSender.currentModule;
         this.$.btModule.setCaption(this.currentModule.name);
-        //this.getBooknames(enyo.application.currentModule.name);
+        this.doGetBooknames(this.currentModule.name);
         this.getVerses();
         this.resizeHandler();
     },
@@ -411,7 +423,7 @@ enyo.kind({
 
         if (this.$.pane.getViewName() === "stuffView") {
             biblez.highlightVerse = true;
-            this.doSplitVerse(inSender.getVerse(), inSender.getPassage());
+            this.doSplitVerse(inSender.getPassage(), inSender.getVerse());
         } else {
             this.$.selector.setVerse(inSender.getVerse());
             this.getVerses(inSender.getPassage());
@@ -530,7 +542,8 @@ enyo.kind({
 
     handleVerseTap: function(inSender, inEvent) {
         this.$.versePopup.setTappedVerse(inSender.tappedVerse);
-        this.$.versePopup.setVerse(enyo.byId("verse"+inSender.tappedVerse).innerHTML.replace(/<[^>]*>/g, ""));
+        var verseID = (this.view == "main")? "verse" : "verseSplit";
+        this.$.versePopup.setVerse(enyo.byId(verseID + inSender.tappedVerse).innerHTML.replace(/<[^>]*>/g, ""));
         this.$.versePopup.openAt({top: inSender.popupTop, left: inSender.popupLeft}, true);
 
         var bmID = (inSender.getView() == "split") ? "bmIconSplit" : "bmIcon";
@@ -598,7 +611,6 @@ enyo.kind({
     },
 
     getHighlights: function(inDontSetHL) {
-        enyo.log(inDontSetHL, this.view, this.$.selector.bnumber, this.$.selector.chapter);
         if (!inDontSetHL)
             api.getHighlights(this.$.selector.bnumber, this.$.selector.chapter, enyo.bind(this.$.verseView, this.$.verseView.setHighlights));
         if (this.view === "main") {
@@ -625,6 +637,23 @@ enyo.kind({
         enyo.byId(verseID+verseNumber).style.backgroundColor = inSender.getColor();
     },
 
+    handleRemoveHighlight: function (inSender, inEvent) {
+        var id = null;
+        var verseNumber = this.$.verseView.tappedVerse;
+        var verseID = (this.view == "main") ? "verse" : "verseSplit";
+        var data = (this.view == "split") ? biblez.splitHL : biblez.mainHL;
+        for (var i=0; i<data.length; i++) {
+            if (data[i].vnumber === verseNumber) {
+                id = data[i].id;
+            }
+        }
+        api.removeHighlight(id, enyo.bind(this, this.getHighlights));
+        if (enyo.byId("verse"+verseNumber))
+            enyo.byId("verse"+verseNumber).style.backgroundColor = "transparent";
+        if (enyo.byId("verseSplit"+verseNumber))
+            enyo.byId("verseSplit"+verseNumber).style.backgroundColor = "transparent";
+    },
+
     openShowNote: function (inSender, inEvent) {
         enyo.log("Show Notes...");
         var note = (this.$.verseView.getView() === "main") ? biblez.mainNotes[inSender.tappedNote].note : biblez.splitNotes[inSender.tappedNote].note;
@@ -634,7 +663,7 @@ enyo.kind({
     },
 
     handleEditNote: function (inSender, inEvent) {
-        this.$.noteView.close();
+        //this.$.noteView.close();
         var verseNumber = this.$.verseView.tappedVerse;
         var passage = {"bnumber" : this.$.selector.getBnumber(), "cnumber": this.$.selector.getChapter(), "vnumber" : verseNumber};
         //this.$.noteBmSidebar.setBmMode("edit");
@@ -698,6 +727,10 @@ enyo.kind({
         //enyo.log(crossRef);
         if (crossRef.refList.split(";").length === 1) {
             this.currentCrossRef = {top: inSender.popupTop, left: inSender.popupLeft};
+            if (this.view === "main")
+                biblez.highlightVerse = false;
+            else
+                biblez.highlightSplitVerse = false;
             this.getVerses(crossRef.refList, false, true);
         } else {
             var tmpRefs = crossRef.refList.split(";");
@@ -719,9 +752,25 @@ enyo.kind({
     },
 
     handleSelectCrossRef: function (inSender, inEvent) {
-        //this.$.selector.setVerse(1);
+        if (this.view === "main")
+            biblez.highlightVerse = false;
+        else
+            biblez.highlightSplitVerse = false;
         this.currentCrossRef = {top: inSender.top, left: inSender.left};
         this.getVerses(inSender.passage, false, true);
+    },
+
+    handleCrossRefTap: function (inSender, view) {
+        if (view === "main")
+            biblez.highlightVerse = true;
+        else
+            biblez.highlightSplitVerse = true;
+        if (view === this.view)
+            this.getVerses(inSender.passage.passageSingle, inSender.passage.vnumber);
+        else if (view === "main" && this.view === "split")
+            this.doSplitVerse(inSender.passage.passageSingle, inSender.passage.vnumber);
+        else if (view === "split" && this.view === "main")
+            this.doMainVerse(inSender.passage.passageSingle, inSender.passage.vnumber);
     },
 
     handleStrong: function (inSender, id, type, value) {

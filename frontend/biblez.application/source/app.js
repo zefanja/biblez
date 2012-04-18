@@ -50,6 +50,7 @@ enyo.kind({
                     onGetStrong: "handleGetStrong",
                     onGoToMain: "goToMainView",
                     onWelcome: "goToWelcome",
+                    onMainVerse: "handleMainVerse",
                     onGetVMax: "handleGetVMax",
                     onSync: "handleSyncSplitView",
                     onSearch: "handleSearch",
@@ -243,6 +244,14 @@ enyo.kind({
         this.$.mainPane.selectViewByName("welcome");
     },
 
+    handleMainVerse: function (inSender, passage, verse) {
+        if(!this.$.splitPane.showing) {
+            biblez.openedSplitView = true;
+            this.openSecondView();
+        }
+        this.$.splitView.getVerses(passage, verse);
+    },
+
     viewSelected: function(inSender, inView, inPreviousView) {
         this.$.btSplit.hide();
         if (inView.name == "modManView") {
@@ -342,7 +351,7 @@ enyo.kind({
         }
     },
 
-    handleSplitVerse: function (inSender, verse, passage) {
+    handleSplitVerse: function (inSender, passage, verse) {
         this.$.mainView.getVerses(passage, verse);
     },
 

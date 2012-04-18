@@ -114,6 +114,7 @@ enyo.kind({
       onBookmark: "",
       onEditBookmark: "",
       onHighlight: "",
+      onRemoveHighlight: "",
       onRelease: ""
     },
     published: {
@@ -138,7 +139,8 @@ enyo.kind({
                 {kind: "Button", caption: " ", flex: 1, onclick: "highlightVerse", className: "color-button", color: "rgba(255,255,0,0.5)", style: "background-color: yellow;"},
                 {kind: "Button", caption: " ", flex: 1, onclick: "highlightVerse", className: "color-button", color: "rgba(152,251,152,0.5)", style: "background-color: green;"},
                 {kind: "Button", caption: " ", flex: 1, onclick: "highlightVerse", className: "color-button", color: "rgba(238,130,238,0.5)", style: "background-color: violet;"},
-                {kind: "Button", caption: " ", flex: 1, onclick: "highlightVerse", className: "color-button", color: "rgba(255,165,0,0.5)", style: "background-color: orange;"}
+                {kind: "Button", caption: " ", flex: 1, onclick: "highlightVerse", className: "color-button", color: "rgba(255,165,0,0.5)", style: "background-color: orange;"},
+                {kind: "IconButton", icon: "images/delete.png", onclick: "removeHighlight", className: "color-button"}
             ]},
             {name: "csSelector", kind: "HFlexBox", className: "color-selector", components: [
                 {kind: "Button", caption: $L("Copy"), flex: 1, onclick: "copyVerse"},
@@ -182,6 +184,11 @@ enyo.kind({
         //enyo.log(inSender.color);
         this.color = inSender.color;
         this.doHighlight();
+        this.close();
+    },
+
+    removeHighlight: function () {
+        this.doRemoveHighlight();
         this.close();
     },
 
@@ -330,18 +337,34 @@ enyo.kind({
     //caption: "",
     lazy: false,
     published: {
-        showType: "note"
+        showType: "note",
+        passage: {}
     },
     events: {
-        onNoteTap: ""
+        onNoteTap: "",
+        onCrossRefTap: ""
     },
     components:[
         {kind: "BasicScroller", autoVertical: true, style: "height: auto;", flex: 1, components: [
             {name: "noteCaption", allowHtml: true, content: "", className: "popup-caption"},
-            {name: "noteContent", allowHtml: true, content: "", className: "popup-note", onclick: "handleNoteTap"}
+            {name: "noteContent", allowHtml: true, content: "", className: "popup-note", onclick: "handleNoteTap"},
+            {name: "viewSelector", kind: "HFlexBox", className: "color-selector", components: [
+                {kind: "Button", caption: $L("Main View"), flex: 1, view: "main", onclick: "handleCrossRef"},
+                {kind: "Button", caption: $L("Split View"), flex: 1, view: "split", onclick: "handleCrossRef"}
+            ]}
         ]}
         //{kind: "Button", caption: $L("OK"), onclick: "closePopup", style: "margin-top:10px"}
     ],
+
+    open: function () {
+        this.inherited(arguments);
+        this.$.viewSelector.hide();
+    },
+
+    close: function () {
+        this.inherited(arguments);
+        this.$.viewSelector.show();
+    },
 
     setNote: function (note) {
         this.$.noteContent.setContent(note.replace(/"/g,""));
@@ -354,7 +377,15 @@ enyo.kind({
     handleNoteTap: function (inSender, inEvent) {
         if (this.showType == "note") {
             this.doNoteTap();
+            this.close();
+        } else if (this.showType == "crossRef") {
+            this.$.viewSelector.show();
         }
+    },
+
+    handleCrossRef: function (inSender, inEvent) {
+        this.doCrossRefTap(inSender.view);
+        this.close();
     },
 
     closePopup: function() {
