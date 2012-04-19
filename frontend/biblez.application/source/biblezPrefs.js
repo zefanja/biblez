@@ -20,7 +20,8 @@ enyo.kind({
         onBack: "",
         onBgChange: "",
 		onLbChange: "",
-        onScrollChange: ""
+        onScrollChange: "",
+        onGlobalOption: ""
     },
 	published: {
 		background: "biblez",
@@ -77,6 +78,10 @@ enyo.kind({
                         {content: $L("You have to install the 'StrongsGreek' and 'StrongsHebrew' module to use this feature!"), style: "font-size: 0.8em;"}
                     ]},
                     {name: "toggleStrongs", kind: "ToggleButton", state: false, onChange: "changeStrongs"}
+                ]},
+                {align: "center", components: [
+                    {flex: 1, content: $L("Words of Christ in Red")},
+                    {name: "toggleWoC", kind: "ToggleButton", state: false, onChange: "changeWoC"}
                 ]}
             ]},
             {kind: "Group", caption: $L("Custom Fonts"), defaultKind: "HFlexBox", style: "margin-left: auto; margin-right: auto;", className: "prefs-container", components: [
@@ -179,6 +184,13 @@ enyo.kind({
             biblez.greekFont = enyo.json.parse(enyo.getCookie("greekFont"));
             this.$.greekInput.setValue(biblez.greekFont.replace(/'/g, ""));
         }
+
+        if (enyo.getCookie("woc")) {
+            enyo.log(enyo.getCookie("woc"), (enyo.getCookie("wok") === "On") ? true : false);
+            var value = enyo.json.parse(enyo.getCookie("woc"));
+            this.doGlobalOption("Words of Christ in Red", value);
+            this.$.toggleWoC.setState((value == "On") ? true : false);
+        }
     },
 
     itemChanged: function(inSender, inValue, inOldValue) {
@@ -232,6 +244,13 @@ enyo.kind({
         //enyo.log(inState);
         enyo.setCookie("strongs", enyo.json.stringify(inState));
         biblez.strongs = inState;
+    },
+
+    changeWoC: function (inSender, inState) {
+        //enyo.log(inState);
+        var value = (inState) ? "On" : "Off";
+        enyo.setCookie("woc", enyo.json.stringify(value));
+        this.doGlobalOption("Words of Christ in Red", value);
     },
 
     scrollingChanged: function (inSender, inEvent) {
@@ -384,5 +403,9 @@ enyo.kind({
     callbackRestore: function (inType) {
         //enyo.log("RESTORE", inType);
         enyo.windows.addBannerMessage($L("Restored") + " " + inType, enyo.json.stringify({}));
+    },
+
+    handleGlobalOption: function (respone) {
+        enyo.log(respone);
     }
 });

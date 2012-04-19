@@ -91,7 +91,8 @@ enyo.kind({
                 onBack: "goToMainView",
                 onBgChange: "changeBackground",
                 onLbChange: "changeLinebreak",
-                onScrollChange: "changeScrolling"
+                onScrollChange: "changeScrolling",
+                onGlobalOption: "changeGlobalOption"
             }
         ]},
         {name: "btSplit", content: "", className: "split-button", showing: true, allowDrag: true,
@@ -340,7 +341,7 @@ enyo.kind({
     //SPLIT VIEW
 
     handleSyncSplitView: function (inSender, inEvent) {
-        enyo.log("HandleSync", this.$.splitView.getSync() && this.$.splitPane.showing);
+        //enyo.log("HandleSync", this.$.splitView.getSync() && this.$.splitPane.showing);
         if (this.$.splitView.getSync() && this.$.splitPane.showing) {
             if (inSender.goPrev) {
                 this.$.splitView.setGoPrev(true);
@@ -414,6 +415,11 @@ enyo.kind({
 
     changeScrolling: function (inSender, inEvent) {
         this.scrollingChanged = true;
+    },
+
+    changeGlobalOption: function (inSender, inOption, inValue) {
+        //enyo.log(inOption, inValue);
+        this.$.swordApi.setGlobalOption(enyo.bind(inSender, inSender.handleGlobalOption), inOption, inValue);
     },
 
     //MISC

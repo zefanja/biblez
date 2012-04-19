@@ -255,6 +255,11 @@ enyo.kind({
         }*/
     },
 
+    setGlobalOption: function (inCallback, inOption, inValue) {
+        try { var status = this.$.sword.callPluginMethodDeferred(inCallback, "setGlobalOption", inOption, inValue); }
+        catch (e) { this.showError("Plugin exception: " + e);}
+    },
+
     search: function (module, searchTerm, searchScope, searchType, view) {
         //enyo.log("API:", module, searchTerm, searchScope, searchType);
         if (this.pluginReady) {

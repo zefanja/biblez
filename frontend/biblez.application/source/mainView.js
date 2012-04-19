@@ -206,18 +206,15 @@ enyo.kind({
     },
 
     handleGetBooknames: function (bnames) {
-        //enyo.log(bnames);
         biblez.bookNames = enyo.json.parse(bnames);
         this.$.selector.setBookNames(biblez.bookNames);
-        //enyo.log(typeof enyo.getCookie("passage"));
-        if (enyo.getCookie("passage") && enyo.getCookie("passage") !== "null")
-            this.$.selector.setCurrentPassage(enyo.json.parse(enyo.getCookie("passage")));
-        //this.getVerses();
-
 
         if (this.firstStart) {
-            enyo.log("Load Font Settings...");
             this.firstStart = false;
+            //Load last read passage
+            if (enyo.getCookie("passage") && enyo.getCookie("passage") !== "null")
+                this.$.selector.setCurrentPassage(enyo.json.parse(enyo.getCookie("passage")));
+
             //Load Font Settings
             if (enyo.getCookie("font")) {
                 biblez.currentFont = enyo.json.parse(enyo.getCookie("font"));
@@ -229,7 +226,6 @@ enyo.kind({
                 this.$.fontMenu.setFontSize(biblez.currentFontSize);
                 this.$.verseView.setFontSize(biblez.currentFontSize);
             }
-
             //Go to verseView (app.js)
             this.doGoToMain(this.inWait);
         }

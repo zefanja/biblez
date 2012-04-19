@@ -844,7 +844,7 @@ PDL_bool getBooknames(PDL_JSParameters *parms) {
 
 PDL_bool setGlobalOption(PDL_JSParameters *parms) {
 	const char* option = PDL_GetJSParamString(parms, 0);
-	const char* value = PDL_GetJSParamString(parms, 0);
+	const char* value = PDL_GetJSParamString(parms, 1);
 
 	displayLibrary->setGlobalOption(option, value);
 
