@@ -126,7 +126,7 @@ enyo.kind({
 		if (enyo.fetchDeviceInfo().keyboardAvailable)
 			this.$.btSidebar.setToggling(false);
 
-		if (enyo.getCookie("biblezpro") && !enyo.fetchDeviceInfo().keyboardAvailable) {
+		if (!enyo.getCookie("biblezpro") && !enyo.fetchDeviceInfo().keyboardAvailable) {
 			this.$.pro.openAtCenter();
 		}
 	},
