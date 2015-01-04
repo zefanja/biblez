@@ -73,6 +73,26 @@ std::string convertString(std::string s) {
     return ss.str();
 }
 
+std::string escapeJsonString(const std::string& input) {
+    std::ostringstream ss;
+    //for (auto iter = input.cbegin(); iter != input.cend(); iter++) {
+    //C++98/03:
+    for (std::string::const_iterator iter = input.begin(); iter != input.end(); iter++) {
+        switch (*iter) {
+            case '\\': ss << "\\\\"; break;
+            case '"': ss << "\\\""; break;
+            case '/': ss << "\\/"; break;
+            case '\b': ss << "\\b"; break;
+            case '\f': ss << "\\f"; break;
+            case '\n': ss << "\\n"; break;
+            case '\r': ss << "\\r"; break;
+            case '\t': ss << "\\t"; break;
+            default: ss << *iter; break;
+        }
+    }
+    return ss.str();
+}
+
 void splitstring(std::string str, std::string separator, std::string &first, std::string &second) {
 	size_t i = str.find(separator); //find seperator
 	if(i != std::string::npos) {
@@ -444,7 +464,7 @@ void listModules(SWMgr *otherMgr = 0, bool onlyNewAndUpdates = false) {
 				out << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
 			}
 			out << "\"datapath\": \"" << module->getConfigEntry("DataPath") << "\", ";
-			out << "\"description\": \"" << module->getConfigEntry("Description") << "\", ";
+			out << "\"description\": \"" << escapeJsonString(module->getConfigEntry("Description")) << "\", ";
 			out << "\"modType\": \"" << module->Type() << "\"}";
 		}
 	}
@@ -500,13 +520,13 @@ PDL_bool getModuleDetails (PDL_JSParameters *parms) {
 
 	mod << "\"name\": \"" << module->Name() << "\"";
 	mod << ", \"datapath\": \"" << module->getConfigEntry("DataPath") << "\"";
-	mod << ", \"description\": \"" << convertString(module->getConfigEntry("Description")) << "\"";
+	mod << ", \"description\": \"" << escapeJsonString(module->getConfigEntry("Description")) << "\"";
 	if (module->getConfigEntry("Lang")) mod << ", \"lang\": \"" << module->getConfigEntry("Lang") << "\"";
 	if (module->getConfigEntry("Versification")) mod << ", \"versification\": \"" << module->getConfigEntry("Versification") << "\"";
-	if (module->getConfigEntry("About")) mod << ", \"about\": \"" << convertString(module->getConfigEntry("About")) << "\"";
+	if (module->getConfigEntry("About")) mod << ", \"about\": \"" << escapeJsonString(module->getConfigEntry("About")) << "\"";
 	if (module->getConfigEntry("Version")) mod << ", \"version\": \"" << module->getConfigEntry("Version") << "\"";
 	if (module->getConfigEntry("InstallSize")) mod << ", \"installSize\": \"" << module->getConfigEntry("InstallSize") << "\"";
-	if (module->getConfigEntry("Copyright")) mod << ", \"copyright\": \"" << convertString(module->getConfigEntry("Copyright")) << "\"";
+	if (module->getConfigEntry("Copyright")) mod << ", \"copyright\": \"" << escapeJsonString(module->getConfigEntry("Copyright")) << "\"";
 	if (module->getConfigEntry("DistributionLicense")) mod << ", \"distributionLicense\": \"" << module->getConfigEntry("DistributionLicense") << "\"";
 	if (module->getConfigEntry("Category")) mod << ", \"category\": \"" << module->getConfigEntry("Category") << "\"";
 
@@ -621,7 +641,7 @@ PDL_bool getModules(PDL_JSParameters *parms) {
 					modules << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
 				}
 				modules << "\"dataPath\":\"" << module->getConfigEntry("DataPath") << "\", ";
-				modules << "\"descr\": \"" << convertString(module->Description()) << "\"}";
+				modules << "\"descr\": \"" << escapeJsonString(module->Description()) << "\"}";
 			}
 		} else {
 			//if (strcmp(module->Type(), "Biblical Texts") == 0 || strcmp(module->Type(), "Commentaries") == 0) {
@@ -634,7 +654,7 @@ PDL_bool getModules(PDL_JSParameters *parms) {
 					modules << "\"lang\": \"" << module->getConfigEntry("Lang") << "\", ";
 				}
 				modules << "\"dataPath\":\"" << module->getConfigEntry("DataPath") << "\", ";
-				modules << "\"descr\": \"" << convertString(module->Description()) << "\"}";
+				modules << "\"descr\": \"" << escapeJsonString(module->Description()) << "\"}";
 			//}
 		}
 	}
@@ -694,10 +714,10 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 
 		if (strcmp(module->RenderText(), "") != 0) {
 			//headingOn = 0;
-			out << "{\"content\": \"" << convertString(module->RenderText()) << "\", ";
+			out << "{\"content\": \"" << escapeJsonString(module->RenderText()) << "\", ";
 			out << "\"vnumber\": \"" << vk->Verse() << "\", ";
 			out << "\"cnumber\": \"" << vk->Chapter() << "\"";
-			out << ", \"heading\": \"" << convertString(module->getEntryAttributes()["Heading"]["Preverse"]["0"].c_str()) << "\"";
+			out << ", \"heading\": \"" << escapeJsonString(module->getEntryAttributes()["Heading"]["Preverse"]["0"].c_str()) << "\"";
 
 			for (i1 = module->getEntryAttributes().begin(); i1 != module->getEntryAttributes().end(); i1++) {
 				if (strcmp(i1->first, "Footnote") == 0) {
@@ -705,7 +725,7 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 					for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++) {
 						out << "{";
 						for (i3 = i2->second.begin(); i3 != i2->second.end(); i3++) {
-							out << "\"" << i3->first << "\": \"" << convertString(i3->second.c_str()) << "\"";
+							out << "\"" << i3->first << "\": \"" << escapeJsonString(i3->second.c_str()) << "\"";
 							//footnotesOn = 1;
 							if (i3 != --i2->second.end()) {
 								out << ", ";
@@ -722,7 +742,7 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 					for (i2 = i1->second.begin(); i2 != i1->second.end(); i2++) {
 						out << "{";
 						for (i3 = i2->second.begin(); i3 != i2->second.end(); i3++) {
-							out << "\"" << i3->first << "\": \"" << convertString(i3->second.c_str()) << "\"";
+							out << "\"" << i3->first << "\": \"" << escapeJsonString(i3->second.c_str()) << "\"";
 							if (i3 != --i2->second.end()) {
 								out << ", ";
 							}
@@ -739,7 +759,7 @@ PDL_bool getVerses(PDL_JSParameters *parms) {
 			if (vk->Chapter() == 1 && vk->Verse() == 1) {
 				vk->setChapter(0);
 				vk->setVerse(0);
-				out << ", \"intro\": \"" << convertString(module->RenderText()) << "\"";
+				out << ", \"intro\": \"" << escapeJsonString(module->RenderText()) << "\"";
 			}
 
 			out << "}";
@@ -789,7 +809,7 @@ PDL_bool getStrong(PDL_JSParameters *parms) {
 	module->setKey(key);
 
 	if (strcmp(module->RenderText(), "") != 0) {
-		out << convertString(module->RenderText());
+		out << escapeJsonString(module->RenderText());
 	}
 
 	const std::string& tmp = out.str();
@@ -822,8 +842,8 @@ PDL_bool getBooknames(PDL_JSParameters *parms) {
 		vk.setTestament(b+1);
 		for (int i = 0; i < vk.BMAX[b]; i++) {
 			vk.setBook(i+1);
-			bnames << "{\"name\": \"" << convertString(vk.getBookName()) << "\", ";
-			bnames << "\"abbrev\": \"" << convertString(vk.getBookAbbrev()) << "\", ";
+			bnames << "{\"name\": \"" << escapeJsonString(vk.getBookName()) << "\", ";
+			bnames << "\"abbrev\": \"" << escapeJsonString(vk.getBookAbbrev()) << "\", ";
 			bnames << "\"cmax\": \"" << vk.getChapterMax() << "\"}";
 			if (i+1 == vk.BMAX[b] && b == 1) {
 				bnames << "]";

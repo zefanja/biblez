@@ -206,6 +206,10 @@ enyo.kind({
 
     handleGetRemoteModules: function (response) {
         //enyo.log("handleGetRemoteModules", response);
+        /*var split = response.split("}, {");
+        for (var i=0;i<split.length;i++) {
+            enyo.log(split[i] + "}, {");
+        }*/
         this.doGetRemoteModules(response);
     },
 
